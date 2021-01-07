@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "416819679876",
+    "project_id": "reverb-7b75a",
+    "storage_bucket": "reverb-7b75a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416819679876:android:8cc2416787ce8e9827e8d1",
+        "android_client_info": {
+          "package_name": "com.example.reverb"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "416819679876-mr1kscentsbdinurjlab4j27e1en6cd4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMPDSE5NbJKjoG8fy2YFsdxBBvpdp0h8c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416819679876-mr1kscentsbdinurjlab4j27e1en6cd4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "416819679876-mu3vpijh3nus3q0kg4juepvucjftc403.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.reverb"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
