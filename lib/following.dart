@@ -198,14 +198,14 @@ class FollowingPageState extends State<FollowingPage> {
                                               });
                                             }
                                             if(await Permission.photos.request().isDenied) {
-                                              PermissionDemandClass().iosDialogCamera(context);
+                                              PermissionDemandClass().iosDialogImage(context);
                                             }
                                             if(await Permission.photos.request().isPermanentlyDenied) {
-                                              PermissionDemandClass().iosDialogCamera(context);
+                                              PermissionDemandClass().iosDialogImage(context);
                                             }
                                           }
                                           if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
-                                            PermissionDemandClass().iosDialogCamera(context);
+                                            PermissionDemandClass().iosDialogImage(context);
                                           }
                         
                                         } else {
@@ -235,14 +235,14 @@ class FollowingPageState extends State<FollowingPage> {
                                             });
                                           }
                                         if(await Permission.storage.request().isDenied) {
-                                            PermissionDemandClass().androidDialogCamera(context);
+                                            PermissionDemandClass().androidDialogImage(context);
                                         }
                                         if(await Permission.storage.request().isPermanentlyDenied) {
-                                            PermissionDemandClass().androidDialogCamera(context);
+                                            PermissionDemandClass().androidDialogImage(context);
                                         }
                                         }
                                         if(androidPermissions.isPermanentlyDenied || androidPermissions.isDenied) {
-                                            PermissionDemandClass().androidDialogCamera(context);
+                                            PermissionDemandClass().androidDialogImage(context);
                                         }
                                         } 
                                      },

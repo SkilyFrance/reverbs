@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:SONOZ/inscriptionProcess/landingPage.dart';
 import 'package:SONOZ/splash.dart';
 import 'package:flutter/gestures.dart';

@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 
 class PermissionDemandClass {
 
-   iosDialogCamera(BuildContext context) {
+   iosDialogImage(BuildContext context) {
     return showDialog(
       context: context, 
       builder: (_) => new CupertinoAlertDialog(
@@ -63,7 +63,7 @@ class PermissionDemandClass {
     return showDialog(
       context: context, 
       builder: (_) => new CupertinoAlertDialog(
-        content: new Text("Record Screen ?",
+        content: new Text("Create a story ?",
         style: new TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[
@@ -87,7 +87,7 @@ class PermissionDemandClass {
   }
 
 
-  androidDialogCamera(BuildContext context) {
+  androidDialogImage(BuildContext context) {
     return showDialog(
       context: context,
       builder: (context) => new AlertDialog(
@@ -123,6 +123,35 @@ class PermissionDemandClass {
           borderRadius: new BorderRadius.circular(10.0),
         ),
         content: new Text("Choose an audio ?",
+        style: new TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        actions: <Widget>[
+          new FlatButton(
+            onPressed: (){
+              Navigator.pop(context);
+            }, 
+            child: new Text('No.'),
+            ),
+          new FlatButton(
+            onPressed: (){
+              openAppSettings();
+            }, 
+            child: new Text('Yes, thanks',
+            ),
+            ),
+        ],
+      ),
+      );
+  }
+
+  androidDialogMicro(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        shape: new RoundedRectangleBorder(
+          borderRadius: new BorderRadius.circular(10.0),
+        ),
+        content: new Text("Create a story ?",
         style: new TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[

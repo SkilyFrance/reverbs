@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:SONOZ/inscriptionProcess/landingPage.dart';
 import 'package:SONOZ/navigation.dart';
+import 'package:SONOZ/permissionsHandler.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -60,8 +62,6 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
   String _fileMusicExtension;
   String _dateTimeForMusicUpload;
   final picker = ImagePicker();
-  bool iosPhotoPermissionDenied = false;
-  bool iosMediaPermissionDenied = false;
 
   //CreationProfileCircular//
   bool profileInCreation = true;
@@ -367,20 +367,14 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                                          });
                                        }
                                        if(await Permission.photos.request().isDenied) {
-                                         setState(() {
-                                           iosPhotoPermissionDenied = true;
-                                         });
+                                         PermissionDemandClass().iosDialogImage(context);
                                        }
                                        if(await Permission.photos.request().isPermanentlyDenied) {
-                                         setState(() {
-                                           iosPhotoPermissionDenied = true;
-                                         });
+                                         PermissionDemandClass().iosDialogImage(context);
                                        }
                                      }
                                      if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
-                                         setState(() {
-                                           iosPhotoPermissionDenied = true;
-                                         });
+                                       PermissionDemandClass().iosDialogImage(context);
                                      }
         
                                    } else {
@@ -410,22 +404,16 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                                        });
                                      }
                                    if(await Permission.storage.request().isDenied) {
-                                     setState(() {
-                                       iosPhotoPermissionDenied = true;
-                                     }); 
+                                     PermissionDemandClass().androidDialogImage(context);
                                    }
                                    if(await Permission.storage.request().isPermanentlyDenied) {
-                                     setState(() {
-                                       iosPhotoPermissionDenied = true;
-                                     });
+                                     PermissionDemandClass().androidDialogImage(context);
                                    }
                                    }
                                    if(androidPermissions.isPermanentlyDenied || androidPermissions.isDenied) {
-                                     setState(() {
-                                       iosPhotoPermissionDenied = true;
-                                     });
+                                     PermissionDemandClass().androidDialogImage(context);
                                    }
-                                   } 
+                                } 
                               },
                               child: new Container(
                                 height: MediaQuery.of(context).size.height*0.15,
@@ -520,23 +508,55 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                                         }
 
                                         if(await Permission.mediaLibrary.request().isDenied) {
-                                          setState(() {
-                                            iosMediaPermissionDenied = true;
-                                          });
+                                          PermissionDemandClass().iosDialogFile(context);
                                         }
                                         if(await Permission.mediaLibrary.request().isPermanentlyDenied) {
-                                          setState(() {
-                                            iosMediaPermissionDenied = true;
-                                          });
+                                          PermissionDemandClass().iosDialogFile(context);
                                         }
                                       }
                                       if(mediaLibraryIOSPermission.isDenied || mediaLibraryIOSPermission.isPermanentlyDenied) {
-                                        setState(() {
-                                          iosMediaPermissionDenied = true;
-                                        });
+                                        PermissionDemandClass().iosDialogFile(context);
                                       }
                                       //Platform is Android or other
                                     } else {
+                                      var mediaLibraryAndroidPermission = await Permission.storage.status;
+                                      if(mediaLibraryAndroidPermission.isGranted) {
+                                        print('MediaLibraryPermission is already granted');
+                                        FilePickerResult result  = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['mp3','wav', 'aiff']);
+                                        if(result != null) {
+                                          setState(() {
+                                            _music = new File(result.files.single.path);
+                                            _music.absolute.existsSync();
+                                            _fileMusicExtension = result.files.single.extension;
+                                          });
+                                        } else {
+                                          print('No sound selected');
+                                        }
+                                      } else if(mediaLibraryAndroidPermission.isUndetermined) {
+                                        await Permission.storage.request();
+                                        if(await Permission.storage.request().isGranted) {
+                                        FilePickerResult result  = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['mp3','wav', 'aiff']);
+                                        if(result != null) {
+                                          setState(() {
+                                            _music = new File(result.files.single.path);
+                                            _music.absolute.existsSync();
+                                            _fileMusicExtension = result.files.single.extension;
+                                          });
+                                        } else {
+                                          print('No sound selected');
+                                        }
+                                        } else if(await Permission.storage.request().isDenied) {
+                                          //Go to system
+                                          PermissionDemandClass().androidDialogFile(context);
+                                        } else if(await Permission.storage.request().isPermanentlyDenied) {
+                                          //Go to system
+                                          PermissionDemandClass().androidDialogFile(context);
+                                        }
+
+                                      } else if(mediaLibraryAndroidPermission.isDenied||mediaLibraryAndroidPermission.isPermanentlyDenied) {
+                                        //Go to system
+                                        PermissionDemandClass().androidDialogFile(context);
+                                      }
 
                                     }
                                   }, 
@@ -633,27 +653,20 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                                          });
                                        }
                                        if(await Permission.photos.request().isDenied) {
-                                         setState(() {
-                                           iosPhotoPermissionDenied = true;
-                                         });
+                                         PermissionDemandClass().iosDialogImage(context);
                                        }
                                        if(await Permission.photos.request().isPermanentlyDenied) {
-                                         setState(() {
-                                           iosPhotoPermissionDenied = true;
-                                         });
+                                         PermissionDemandClass().iosDialogImage(context);
                                        }
                                      }
                                      if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
-                                         setState(() {
-                                           iosPhotoPermissionDenied = true;
-                                         });
+                                       PermissionDemandClass().iosDialogImage(context);
                                      }
-        
                                    } else {
                                    var androidPermissions = await Permission.storage.status;
                                    if(androidPermissions.isGranted) {
                                      FilePickerResult resultImage  = await FilePicker.platform.pickFiles(type: FileType.image);
-                                  // final pickedFile = await picker.getImage(source: ImageSource.gallery);
+                                    // final pickedFile = await picker.getImage(source: ImageSource.gallery);
                                       setState(() {
                                        if (resultImage != null) {
                                          _musicBackgroundImage = File(resultImage.files.single.path);
@@ -676,20 +689,14 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                                        });
                                      }
                                    if(await Permission.storage.request().isDenied) {
-                                     setState(() {
-                                       iosPhotoPermissionDenied = true;
-                                     }); 
+                                     PermissionDemandClass().androidDialogImage(context);
                                    }
                                    if(await Permission.storage.request().isPermanentlyDenied) {
-                                     setState(() {
-                                       iosPhotoPermissionDenied = true;
-                                     });
+                                     PermissionDemandClass().androidDialogImage(context);
                                    }
                                    }
                                    if(androidPermissions.isPermanentlyDenied || androidPermissions.isDenied) {
-                                     setState(() {
-                                       iosPhotoPermissionDenied = true;
-                                     });
+                                     PermissionDemandClass().androidDialogImage(context);
                                    }
                                    } 
                                   }, 

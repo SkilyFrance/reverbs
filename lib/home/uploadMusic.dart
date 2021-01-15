@@ -58,6 +58,7 @@ class UploadMusicPageState extends State<UploadMusicPage> {
 
   TextEditingController _descriptionTextEditingController = new TextEditingController();
   TextEditingController _titleTextEditingController = new TextEditingController();
+  AudioPlayer audioPlayerForDuration;
   String descriptionMusicUpload;
   String titleMusicUpload;
 
@@ -65,6 +66,7 @@ class UploadMusicPageState extends State<UploadMusicPage> {
 
   @override
   void initState() {
+    audioPlayerForDuration = new AudioPlayer(mode: PlayerMode.MEDIA_PLAYER);
     super.initState();
   }
 
@@ -212,7 +214,44 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                  }
                  //Platform is Android or other
                } else {
+                var mediaLibraryAndroidPermission = await Permission.storage.status;
+                if(mediaLibraryAndroidPermission.isGranted) {
+                  print('MediaLibraryPermission is already granted');
+                  FilePickerResult result  = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['mp3','wav', 'aiff']);
+                  if(result != null) {
+                    setState(() {
+                      _music = new File(result.files.single.path);
+                      _music.absolute.existsSync();
+                      _fileMusicExtension = result.files.single.extension;
+                    });
+                  } else {
+                    print('No sound selected');
+                  }
+                } else if(mediaLibraryAndroidPermission.isUndetermined) {
+                  await Permission.storage.request();
+                  if(await Permission.storage.request().isGranted) {
+                  FilePickerResult result  = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['mp3','wav', 'aiff']);
+                  if(result != null) {
+                    setState(() {
+                      _music = new File(result.files.single.path);
+                      _music.absolute.existsSync();
+                      _fileMusicExtension = result.files.single.extension;
+                    });
+                  } else {
+                    print('No sound selected');
+                  }
+                  } else if(await Permission.storage.request().isDenied) {
+                    //Go to system
+                    PermissionDemandClass().androidDialogFile(context);
+                  } else if(await Permission.storage.request().isPermanentlyDenied) {
+                    //Go to system
+                    PermissionDemandClass().androidDialogFile(context);
+                  }
 
+                } else if(mediaLibraryAndroidPermission.isDenied||mediaLibraryAndroidPermission.isPermanentlyDenied) {
+                  //Go to system
+                  PermissionDemandClass().androidDialogFile(context);
+                }
                }
                 },
               child: new Container(
@@ -309,14 +348,14 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                          });
                        }
                        if(await Permission.photos.request().isDenied) {
-                         PermissionDemandClass().iosDialogCamera(context);
+                         PermissionDemandClass().iosDialogImage(context);
                        }
                        if(await Permission.photos.request().isPermanentlyDenied) {
-                         PermissionDemandClass().iosDialogCamera(context);
+                         PermissionDemandClass().iosDialogImage(context);
                        }
                      }
                      if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
-                       PermissionDemandClass().iosDialogCamera(context);
+                       PermissionDemandClass().iosDialogImage(context);
                      }
 
                    } else {
@@ -346,14 +385,14 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                        });
                      }
                    if(await Permission.storage.request().isDenied) {
-                       PermissionDemandClass().androidDialogCamera(context);
+                       PermissionDemandClass().androidDialogImage(context);
                    }
                    if(await Permission.storage.request().isPermanentlyDenied) {
-                       PermissionDemandClass().androidDialogCamera(context);
+                       PermissionDemandClass().androidDialogImage(context);
                    }
                    }
                    if(androidPermissions.isPermanentlyDenied || androidPermissions.isDenied) {
-                       PermissionDemandClass().androidDialogCamera(context);
+                       PermissionDemandClass().androidDialogImage(context);
                    }
                    } 
                 },
@@ -1205,10 +1244,11 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                 print('uploadedMusicProgress = $uploadedMusicProgress');
             });
             await uploadTaskForMusic;
-            storageForMusic.getDownloadURL().then((fileMusicURL) {
-                AudioPlayer audioPlayer = new AudioPlayer();
-                audioPlayer.setUrl(fileMusicURL);
-                audioPlayer.getDuration().then((durationFileAudio) {
+            storageForMusic.getDownloadURL().then((fileMusicURL) async {
+                await audioPlayerForDuration.setUrl(fileMusicURL);
+                int result = await audioPlayerForDuration.play(fileMusicURL, volume: 0.0);
+                if(result == 1) {
+                audioPlayerForDuration.getDuration().then((durationFileAudio) {
                 FirebaseFirestore.instance
                   .collection('users')
                   .doc(widget.currentUser)
@@ -1259,13 +1299,13 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                   });
                   });
                 });
-
+                } else {
+               print('Do nothing cause not initiazed');
+             }
             });
         } else {
           print('music no exist now');
         }
    }
-
-
 
   } 

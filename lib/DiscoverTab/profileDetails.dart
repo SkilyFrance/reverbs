@@ -349,6 +349,7 @@ class ProfilDetailsPageState extends State<ProfilDetailsPage> {
                                   top: 0.0,
                                   left: 0.0,
                                   right: 0.0,
+                                  bottom: 0.0,
                                   child: new ClipRRect(
                                     child: ds.data()['imageSong'] != null
                                     ? new Image.network(ds.data()['imageSong'], fit: BoxFit.cover)

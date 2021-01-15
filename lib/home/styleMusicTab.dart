@@ -113,7 +113,6 @@ class StyleMusicTabState extends State<StyleMusicTab> {
               ),
             ),
             new Container(
-              //height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
               child: new GridView.builder(
                 physics: new NeverScrollableScrollPhysics(),
@@ -133,7 +132,7 @@ class StyleMusicTabState extends State<StyleMusicTab> {
                       AudioPlayer audioPlayer = new AudioPlayer(mode: PlayerMode.MEDIA_PLAYER);
                       AudioPlayer.logEnabled = true;
                       viewRequest(ds.data()['style'], ds.data()['timestamp'], ds.data()['views'], ds.data()['artistUID']);
-                     // audioPlayer.play(ds.data()['fileMusicURL'], volume: 1).whenComplete(() {
+                      audioPlayer.play(ds.data()['fileMusicURL'], volume: 1.0).whenComplete(() {
                       Navigator.push(context, new MaterialPageRoute(builder: (context) => new DiscoverTab(
                           currentUser: widget.currentUser,
                           audioPlayerController: audioPlayer,
@@ -145,7 +144,7 @@ class StyleMusicTabState extends State<StyleMusicTab> {
                           audioPlayerControllerDuration: ds.data()['fileMusicDuration'],
                         ))
                         );
-                      //});
+                      });
                     },
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,

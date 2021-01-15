@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screen_recording/flutter_screen_recording.dart';
+//import 'package:flutter_screen_recording/flutter_screen_recording.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:readmore/readmore.dart';
@@ -594,6 +595,10 @@ void timerForExtractStory() {
                         ),
                         new InkWell(
                           onTap: () {
+                            widget.audioPlayerController.pause();
+                            setState(() {
+                              audioIsOnPause = true;
+                            });
                             Navigator.push(context, 
                             new MaterialPageRoute(builder: (context) => new ProfilDetailsPage(
                               currentUser: widget.currentUser,
@@ -1003,16 +1008,42 @@ void timerForExtractStory() {
                                                       });
                                                      }
                                                   } else if(await Permission.mediaLibrary.request().isDenied) {
+                                                    PermissionDemandClass().iosDialogFile(context);
 
                                                   } else if(await Permission.mediaLibrary.request().isPermanentlyDenied) {
-
+                                                    PermissionDemandClass().iosDialogFile(context);
                                                   }
-
                                                 } else if(storagePermission.isDenied || storagePermission.isPermanentlyDenied) {
+                                                  PermissionDemandClass().iosDialogFile(context);
 
                                                 }
                                               } else {
                                                 //Android
+                                                var storagePermissionAndroid = await Permission.storage.status;
+                                                if(storagePermissionAndroid.isGranted) {
+                                                  if(this.mounted) {
+                                                    setState(() {
+                                                      showSetupToScreenshot = true;
+                                                    });
+                                                  }
+                                                } else if(storagePermissionAndroid.isUndetermined) {
+                                                  await Permission.storage.request();
+                                                  if(await Permission.storage.request().isGranted) {
+                                                    if(this.mounted) {
+                                                      setState(() {
+                                                        showSetupToScreenshot = true;
+                                                      });
+                                                    }
+                                                  } else if(await Permission.storage.request().isDenied) {
+                                                    PermissionDemandClass().androidDialogFile(context);
+
+                                                  } else if(await Permission.storage.request().isPermanentlyDenied) {
+                                                    PermissionDemandClass().androidDialogFile(context);
+                                                  }
+
+                                                } else if(storagePermissionAndroid.isDenied || storagePermissionAndroid.isPermanentlyDenied) {
+                                                  PermissionDemandClass().androidDialogFile(context);
+                                                }
                                               }
                                               },
                                               child: new Container(
@@ -1242,7 +1273,7 @@ void timerForExtractStory() {
                   new FlatButton(
                     onPressed: () {
                       _createStoryController.nextPage(duration: new Duration(microseconds: 1), curve: Curves.bounceIn);
-                      audioPlayerStory.stop();
+                      audioPlayerStory.pause();
                      _startSelectExtract = 0;
                      _timerSelectExtract.cancel();
                     }, 
@@ -1379,12 +1410,12 @@ void timerForExtractStory() {
                               children: [
                                 new FlatButton(
                                   onPressed: () async {
-
                                     if(Platform.isIOS) {
                                       var microphonePermission = await Permission.microphone.status;
                                       if(microphonePermission.isGranted) {
                                       await FlutterScreenRecording.startRecordScreenAndAudio('${DateTime.now().millisecond.toString()}', titleNotification: DateTime.now().millisecond.toString(), messageNotification: DateTime.now().millisecond.toString()).whenComplete(() {
                                         audioPlayerStory.seek(new Duration(milliseconds: (currentSeekUpdate))).whenComplete(() {
+                                          audioPlayerStory.resume();
                                           timerForExtractStory();
                                         });
                                         if(this.mounted) {
@@ -1400,6 +1431,7 @@ void timerForExtractStory() {
                                         //
                                       await FlutterScreenRecording.startRecordScreenAndAudio('${DateTime.now().millisecond.toString()}', titleNotification: DateTime.now().millisecond.toString(), messageNotification: DateTime.now().millisecond.toString()).whenComplete(() {
                                         audioPlayerStory.seek(new Duration(milliseconds: (currentSeekUpdate))).whenComplete(() {
+                                          audioPlayerStory.resume();
                                           timerForExtractStory();
                                         });
                                         if(this.mounted) {
@@ -1410,12 +1442,53 @@ void timerForExtractStory() {
                                       }).catchError((error) => print('error = $error'));
                                       //
                                         } else if (await Permission.microphone.request().isDenied) {
+                                          PermissionDemandClass().iosDialogMicro(context);
                                         } else if (await Permission.microphone.request().isPermanentlyDenied) {
+                                          PermissionDemandClass().iosDialogMicro(context);
                                         }
                                       } else if(microphonePermission.isDenied || microphonePermission.isPermanentlyDenied) {
+                                        PermissionDemandClass().iosDialogMicro(context);
                                       }
                                     } else {
                                       //Android
+                                      var microphonePermissionAndroid = await Permission.microphone.status;
+                                      if(microphonePermissionAndroid.isGranted) {
+                                       await FlutterScreenRecording.startRecordScreenAndAudio('${DateTime.now().millisecond.toString()}', titleNotification: DateTime.now().millisecond.toString(), messageNotification: DateTime.now().millisecond.toString()).whenComplete(() {
+                                         audioPlayerStory.seek(new Duration(milliseconds: (currentSeekUpdate))).whenComplete(() {
+                                           timerForExtractStory();
+                                         });
+                                         if(this.mounted) {
+                                         setState(() {
+                                           _startRecordScreen = true;
+                                         });
+                                         }
+                                       }).catchError((error) => print('error = $error'));
+                                       //
+                                      } else if(microphonePermissionAndroid.isUndetermined){
+                                        await Permission.microphone.request();
+                                        if(await Permission.microphone.request().isGranted) {
+                                            //
+                                            await FlutterScreenRecording.startRecordScreenAndAudio('${DateTime.now().millisecond.toString()}', titleNotification: DateTime.now().millisecond.toString(), messageNotification: DateTime.now().millisecond.toString()).whenComplete(() {
+                                              audioPlayerStory.seek(new Duration(milliseconds: (currentSeekUpdate))).whenComplete(() {
+                                                timerForExtractStory();
+                                              });
+                                              if(this.mounted) {
+                                              setState(() {
+                                                _startRecordScreen = true;
+                                              });
+                                              }
+                                            }).catchError((error) => print('error = $error'));
+                                            //
+                                        } else if(await Permission.microphone.request().isDenied) {
+                                          PermissionDemandClass().androidDialogMicro(context);
+
+                                        } else if(await Permission.microphone.request().isPermanentlyDenied) {
+                                          PermissionDemandClass().androidDialogMicro(context);
+                                        }
+
+                                      } else if(microphonePermissionAndroid.isDenied || microphonePermissionAndroid.isPermanentlyDenied) {
+                                        PermissionDemandClass().androidDialogMicro(context);
+                                      }
                                     }
                                   }, 
                                   child: new Text('CREATE STORY',
@@ -1863,7 +1936,7 @@ void timerForExtractStory() {
                       backgroundColor: Colors.transparent,
                       valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
                       value: audioPlayerControllerPosition/widget.audioPlayerControllerDuration,
-                    ),
+                   ),
                    ),
                   new Positioned(
                     top: 0.0,

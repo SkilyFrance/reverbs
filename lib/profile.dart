@@ -363,14 +363,14 @@ class ProfilePageState extends State<ProfilePage> {
                                               });
                                             }
                                             if(await Permission.photos.request().isDenied) {
-                                              PermissionDemandClass().iosDialogCamera(context);
+                                              PermissionDemandClass().iosDialogImage(context);
                                             }
                                             if(await Permission.photos.request().isPermanentlyDenied) {
-                                              PermissionDemandClass().iosDialogCamera(context);
+                                              PermissionDemandClass().iosDialogImage(context);
                                             }
                                           }
                                           if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
-                                            PermissionDemandClass().iosDialogCamera(context);
+                                            PermissionDemandClass().iosDialogImage(context);
                                           }
                         
                                         } else {
@@ -400,14 +400,14 @@ class ProfilePageState extends State<ProfilePage> {
                                             });
                                           }
                                         if(await Permission.storage.request().isDenied) {
-                                            PermissionDemandClass().androidDialogCamera(context);
+                                            PermissionDemandClass().androidDialogImage(context);
                                         }
                                         if(await Permission.storage.request().isPermanentlyDenied) {
-                                            PermissionDemandClass().androidDialogCamera(context);
+                                            PermissionDemandClass().androidDialogImage(context);
                                         }
                                         }
                                         if(androidPermissions.isPermanentlyDenied || androidPermissions.isDenied) {
-                                            PermissionDemandClass().androidDialogCamera(context);
+                                            PermissionDemandClass().androidDialogImage(context);
                                         }
                                         } 
                                      },
@@ -873,14 +873,14 @@ class ProfilePageState extends State<ProfilePage> {
                                                       }
                                                     }
                                                     if(await Permission.photos.request().isDenied) {
-                                                      PermissionDemandClass().iosDialogCamera(context);
+                                                      PermissionDemandClass().iosDialogImage(context);
                                                     }
                                                     if(await Permission.photos.request().isPermanentlyDenied) {
-                                                      PermissionDemandClass().iosDialogCamera(context);
+                                                      PermissionDemandClass().iosDialogImage(context);
                                                     }
                                                   }
                                                   if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
-                                                    PermissionDemandClass().iosDialogCamera(context);
+                                                    PermissionDemandClass().iosDialogImage(context);
                                                   }
                                 
                                                 } else {
@@ -904,14 +904,14 @@ class ProfilePageState extends State<ProfilePage> {
                                                   }                                                  
                                                   }
                                                 if(await Permission.storage.request().isDenied) {
-                                                    PermissionDemandClass().androidDialogCamera(context);
+                                                    PermissionDemandClass().androidDialogImage(context);
                                                 }
                                                 if(await Permission.storage.request().isPermanentlyDenied) {
-                                                    PermissionDemandClass().androidDialogCamera(context);
+                                                    PermissionDemandClass().androidDialogImage(context);
                                                 }
                                                 }
                                                 if(androidPermissions.isPermanentlyDenied || androidPermissions.isDenied) {
-                                                    PermissionDemandClass().androidDialogCamera(context);
+                                                    PermissionDemandClass().androidDialogImage(context);
                                                 }
                                                 } 
                                             }, 
@@ -970,11 +970,10 @@ class ProfilePageState extends State<ProfilePage> {
                                 top: 0.0,
                                 left: 0.0,
                                 right: 0.0,
-                                child: new ClipRRect(
-                                  child: ds.data()['imageSong'] != null
+                                bottom: 0.0,
+                                child: ds.data()['imageSong'] != null
                                   ? new Image.network(ds.data()['imageSong'], fit: BoxFit.cover)
                                   : new Container(),
-                                ),
                                 ),
                               new Positioned(
                                 top: 0.0,
