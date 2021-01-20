@@ -90,6 +90,7 @@ flutter:
     - lib/assets/returnButton.png
     - lib/assets/forward.png
     - lib/assets/music.mp3
+    - lib/assets/spotify.png
 
 
 

@@ -142,6 +142,7 @@ class StyleMusicTabState extends State<StyleMusicTab> {
                           filterRecentIsChoosen: filterRecentIsChoosen,
                           songsLikedMap: widget.songsLikedMap,
                           audioPlayerControllerDuration: ds.data()['fileMusicDuration'],
+                          artistUID: ds.data()['artistUID'],
                         ))
                         );
                       });

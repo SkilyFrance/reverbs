@@ -44,7 +44,7 @@ class NavigationPageState extends State<NavigationPage> {
   @override 
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.black,
       body: new PageStorage(
         bucket: bucket, 
         child: currentScreen,

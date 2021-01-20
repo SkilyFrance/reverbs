@@ -74,7 +74,6 @@ class ProfilDetailsPageState extends State<ProfilDetailsPage> {
   void initState() {
     listenIfAlreadyliked();
     listenIfUserAlreadyFollowed();
-    //listenArtistDatas();
     super.initState();
   }
 
@@ -267,6 +266,30 @@ class ProfilDetailsPageState extends State<ProfilDetailsPage> {
                         ),
                         child: new Center(
                           child: new Image.asset('lib/assets/instagram.png',
+                          height: 25.0,
+                          width: 25.0,
+                          color: Colors.white,
+                          ),
+                        ),
+                        )))
+                        : new Container(),
+                        //ArtistSpotifyLink
+                        snapshotUser.data.data()['spotifyLink'] != null
+                        ? new Padding(
+                          padding: EdgeInsets.only(left: 20.0),
+                        child: new InkWell(
+                          onTap: () {
+                            _launchURL(snapshotUser.data.data()['spotifyLink']);
+                          },
+                        child: new Container(
+                          height: MediaQuery.of(context).size.height*0.05,
+                          width: MediaQuery.of(context).size.height*0.05,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: new BorderRadius.circular(5.0),
+                        ),
+                        child: new Center(
+                          child: new Image.asset('lib/assets/spotify.png',
                           height: 25.0,
                           width: 25.0,
                           color: Colors.white,

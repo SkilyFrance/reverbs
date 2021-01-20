@@ -7,6 +7,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screen_recording/flutter_screen_recording.dart';
@@ -27,6 +28,7 @@ class DiscoverTab extends StatefulWidget {
   bool filterRecentIsChoosen;
   Map<dynamic, dynamic> songsLikedMap;
   int audioPlayerControllerDuration;
+  String artistUID;
 
   DiscoverTab({
     Key key, 
@@ -38,6 +40,7 @@ class DiscoverTab extends StatefulWidget {
     this.filterRecentIsChoosen,
     this.songsLikedMap,
     this.audioPlayerControllerDuration,
+    this.artistUID,
     }) : super(key: key);
 
 
@@ -75,6 +78,9 @@ class DiscoverTabState extends State<DiscoverTab> {
   bool dirtyDutchChoosen = false;
   bool moombathtonChoosen = false;
   bool hardstyleChoosen = false;
+
+  bool modalBottomExpanded = false;
+  bool musicIsInitializing = true;
 
   //Variables to create a story
   AudioPlayer audioPlayerStory = new AudioPlayer(mode: PlayerMode.MEDIA_PLAYER);
@@ -164,13 +170,38 @@ void timerForExtractStory() {
 }
 
 
+
+  //Get totalLikes from artistUID
+  int totalLikes;
+  getArtistTotalLikes() {
+    FirebaseFirestore.instance
+      .collection('users')
+      .doc(widget.artistUID)
+      .get()
+      .then((value) {
+        if(value.exists) {
+          setState(() {
+            totalLikes = value.data()['likes'];
+          });
+          print('Total of Likes = $totalLikes');
+        }
+      });
+  }
+
+
   @override
   void initState() {
     print('index = ${widget.index}');
+    getArtistTotalLikes();
     widget.audioPlayerController.onAudioPositionChanged.listen((event) {
       setState(() {
         audioPlayerControllerPosition = event.inMilliseconds;
       });
+      if(event.inMilliseconds > 0 && event.inMilliseconds < 2000) {
+        setState(() {
+          musicIsInitializing = false;
+        });
+      }
     });
     _listMusicController = new PageController(viewportFraction: 1, initialPage: widget.index);
     super.initState();
@@ -188,6 +219,7 @@ void timerForExtractStory() {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      resizeToAvoidBottomPadding: false,
       body: new Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -227,295 +259,6 @@ void timerForExtractStory() {
                       ),
                     ),
                   ),
-          new Positioned(
-            top: 0.0,
-            left: 0.0,
-            right: 0.0,
-            bottom: 0.0,
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                new Container(
-                  height: MediaQuery.of(context).size.height*0.22,
-                  width: MediaQuery.of(context).size.width,
-                  child: new Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-            new Container(
-             height: MediaQuery.of(context).size.height*0.05,
-             width: MediaQuery.of(context).size.width,
-             color: Colors.transparent,
-             child: new Center(
-               child: new ListView(
-                 scrollDirection: Axis.horizontal,
-                 padding: EdgeInsets.only(top: 3.0,left: 10.0, right: 20.0, bottom: 3.0),
-                 children: [
-                   //EDM
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'edm' ? Colors.yellowAccent :  Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                       setState(() {
-                         widget.musicStyle = 'edm';
-                       });
-                     },
-                      child: new Text('EDM',
-                      style: new TextStyle(color: widget.musicStyle == 'edm' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //ELECTRO
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'electro' ? Colors.yellowAccent :  Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                       setState(() {
-                         widget.musicStyle = 'electro';
-                       });
-                     },
-                      child: new Text('ELECTRO',
-                      style: new TextStyle(color: widget.musicStyle == 'electro' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //HOUSE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'house' ? Colors.yellowAccent :  Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                       setState(() {
-                         widget.musicStyle = 'house';
-                       });
-                     },
-                      child: new Text('HOUSE',
-                      style: new TextStyle(color: widget.musicStyle == 'house' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //ACID-HOUSE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'acidHouse' ? Colors.yellowAccent :  Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                       setState(() {
-                         widget.musicStyle = 'acidHouse';
-                       });
-                     },
-                      child: new Text('ACID-HOUSE',
-                      style: new TextStyle(color: widget.musicStyle == 'acidHouse' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //FUTURE-HOUSE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'futureHouse' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                      setState(() {
-                        widget.musicStyle = 'futureHouse';
-                      });
-                     },
-                      child: new Text('FUTURE-HOUSE',
-                      style: new TextStyle(color: widget.musicStyle == 'futureHouse' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //DEEPHOUSE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'deepHouse'? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'deepHouse';
-                     });
-                     },
-                      child: new Text('DEEP-HOUSE',
-                      style: new TextStyle(color: widget.musicStyle == 'deepHouse' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //CHILL-HOUSE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'chillHouse' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'chillHouse';
-                     });  
-                     },
-                      child: new Text('CHILL-HOUSE',
-                      style: new TextStyle(color: widget.musicStyle == 'chillHouse' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //TECHNO
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'techno' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'techno';
-                     });
-                     },
-                      child: new Text('TECHNO',
-                      style: new TextStyle(color: widget.musicStyle == 'techno' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //TRANCE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'trance' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'trance';
-                     });
-                     },
-                      child: new Text('TRANCE',
-                      style: new TextStyle(color: widget.musicStyle == 'trance' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //PROGRESSIVE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'progressive' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'progressive';
-                     });
-                     },
-                      child: new Text('PROGRESSIVE',
-                      style: new TextStyle(color: widget.musicStyle == 'progressive' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //MINIMALE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'minimale' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'minimale';
-                     });
-                     },
-                      child: new Text('MINIMALE',
-                      style: new TextStyle(color: widget.musicStyle == 'minimale' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //DUBSTEP
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'dubstep' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'dubstep';
-                     });
-                     },
-                      child: new Text('DUBSTEP',
-                      style: new TextStyle(color: widget.musicStyle == 'dubstep' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //Trap
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'trap' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'trap';
-                     });
-                     },
-                      child: new Text('TRAP',
-                      style: new TextStyle(color: widget.musicStyle == 'trap' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //DIRTY DUTCH
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'dirtyDuctch' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                      setState(() {
-                        widget.musicStyle = 'dirtyDuctch';
-                      });
-                     },
-                      child: new Text('DIRTY-DUTCH',
-                      style: new TextStyle(color: widget.musicStyle == 'dirtyDuctch' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //MOOMBAHTON
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'moombathton' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'moombathton';
-                     });
-                     },
-                      child: new Text('MOOMBAHTON',
-                      style: new TextStyle(color: widget.musicStyle == 'moombathton' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                   //HARDSTYLE
-                   new Padding(
-                     padding: EdgeInsets.only(left: 10.0),
-                   child: new FlatButton(
-                     color: widget.musicStyle == 'hardstyle' ? Colors.yellowAccent : Colors.grey[900],
-                     shape: new RoundedRectangleBorder(
-                       borderRadius: new BorderRadius.circular(5.0),
-                     ),
-                     onPressed: () {
-                     setState(() {
-                       widget.musicStyle = 'hardstyle';
-                     }); 
-                     },
-                      child: new Text('HARDSTYLE',
-                      style: new TextStyle(color: widget.musicStyle == 'hardstyle' ? Colors.black : Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
-                      ))),
-                 ],
-               ),
-             ),
-           ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            ),
                 ],
               ),
             );
@@ -830,10 +573,12 @@ void timerForExtractStory() {
                                             new InkWell(
                                               onTap: () {
                                               showCupertinoModalBottomSheet(
+                                                expand: true,
                                                 animationCurve: Curves.decelerate,
                                                 context: context,
-                                                builder: (context) =>
-                                                new Material(
+                                                builder: (context) {
+                                                return new StatefulBuilder(builder: (BuildContext context, StateSetter setModalState) {
+                                                return new Material(
                                                   color: Colors.transparent,
                                                 child: new Container(
                                                   height: MediaQuery.of(context).size.height*0.55,
@@ -926,6 +671,7 @@ void timerForExtractStory() {
                                                       scrollController: _textFieldCommentScrollController,
                                                       maxLines: null,
                                                       minLines: 1,
+                                                      autofocus: true,
                                                       style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.normal),
                                                       cursorColor: Colors.yellowAccent,
                                                       controller: _commentTextEditingControler,
@@ -963,7 +709,9 @@ void timerForExtractStory() {
                                                     ],
                                                   ),
                                                 ),
-                                                ),
+                                                );
+                                                });
+                                                }
                                               );
                                               },
                                               child: new Container(
@@ -1621,7 +1369,28 @@ void timerForExtractStory() {
             left: 0.0,
             right: 0.0,
             bottom: 0.0,
-            child: new Column(
+            child: musicIsInitializing == true
+            ? new Center(
+              child: new Container(
+                height: MediaQuery.of(context).size.height*0.10,
+                width: MediaQuery.of(context).size.height*0.10,
+                decoration: new BoxDecoration(
+                  borderRadius: new BorderRadius.circular(10.0),
+                  color: Colors.black.withOpacity(0.5),
+                ),
+                child: new Padding(
+                  padding: EdgeInsets.all(30.0),
+                child: new Container(
+                  height: MediaQuery.of(context).size.height*0.06,
+                  width: MediaQuery.of(context).size.height*0.06,
+                  child: new CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.5))
+                  ),
+                ),
+                ),
+              ),
+            )
+            : new Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 new AppBar(
@@ -1646,7 +1415,7 @@ void timerForExtractStory() {
                   child: new Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-            new Container(
+            /*new Container(
              height: MediaQuery.of(context).size.height*0.05,
              width: MediaQuery.of(context).size.width,
              color: Colors.transparent,
@@ -1914,7 +1683,7 @@ void timerForExtractStory() {
                  ],
                ),
              ),
-           ),
+           ),*/
            //Divider
            new Container(
              height: MediaQuery.of(context).size.height*0.02,
@@ -1932,10 +1701,29 @@ void timerForExtractStory() {
                    left: 0.0,
                    right: 0.0,
                    bottom: 0.0,
-                    child: new LinearProgressIndicator(
-                      backgroundColor: Colors.transparent,
-                      valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
-                      value: audioPlayerControllerPosition/widget.audioPlayerControllerDuration,
+                   child: new Column(
+                     mainAxisAlignment: MainAxisAlignment.start,
+                     children: [
+                        new Container(
+                          height: MediaQuery.of(context).size.height*0.01,
+                          width: MediaQuery.of(context).size.width,
+                          color: Colors.transparent,
+                        ),
+                        new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            new Container(  
+                              height: MediaQuery.of(context).size.height*0.06,
+                              width: MediaQuery.of(context).size.height*0.06,
+                              child: new CircularProgressIndicator(
+                              backgroundColor: Colors.black.withOpacity(0.5),
+                              valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
+                              value: audioPlayerControllerPosition/widget.audioPlayerControllerDuration,
+                              ),
+                            ),
+                          ],
+                      ),
+                    ],
                    ),
                    ),
                   new Positioned(
@@ -1963,10 +1751,11 @@ void timerForExtractStory() {
                               width: MediaQuery.of(context).size.height*0.06,
                               decoration: new BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.yellowAccent,
+                                color: Colors.black.withOpacity(0.3),
                               ),
                               child: new Center(
                                 child: new Image.asset('lib/assets/returnButton.png',
+                                  color: Colors.white,
                                   height: MediaQuery.of(context).size.height*0.03,
                                   width: MediaQuery.of(context).size.height*0.03,
                                 ),
@@ -1992,13 +1781,14 @@ void timerForExtractStory() {
                               width: MediaQuery.of(context).size.height*0.06,
                               decoration: new BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.yellowAccent,
+                                color: Colors.black.withOpacity(0.3),
                               ),
                               child: new Center(
                                 child: new Image.asset(
                                   audioIsOnPause == false 
                                   ? 'lib/assets/pause.png'
                                   : 'lib/assets/play.png',
+                                  color: Colors.white,
                                   height: MediaQuery.of(context).size.height*0.025,
                                   width: MediaQuery.of(context).size.height*0.025,
                                 ),
@@ -2014,10 +1804,11 @@ void timerForExtractStory() {
                               width: MediaQuery.of(context).size.height*0.06,
                               decoration: new BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.yellowAccent,
+                                color: Colors.black.withOpacity(0.3),
                               ),
                               child: new Center(
                                 child: new Image.asset('lib/assets/forward.png',
+                                  color: Colors.white,
                                   height: MediaQuery.of(context).size.height*0.025,
                                   width: MediaQuery.of(context).size.height*0.025,
                                 ),
@@ -2141,7 +1932,13 @@ void timerForExtractStory() {
                     .collection('users')
                     .doc(artistUID)
                     .update({
-                      'likes': likes-1,
+                      'likes': totalLikes-1,
+                    }).whenComplete(() {
+                      if(this.mounted) {
+                        setState(() {
+                          totalLikes--;
+                        });
+                      }
                     });
                 });
            });
@@ -2181,7 +1978,13 @@ void timerForExtractStory() {
                   .collection('users')
                   .doc(artistUID)
                   .update({
-                    'likes': likes+1,
+                    'likes': totalLikes+1,
+                  }).whenComplete(() {
+                    if(this.mounted) {
+                      setState(() {
+                        totalLikes++;
+                      });
+                    }
                   });
               });
           });

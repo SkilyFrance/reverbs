@@ -65,6 +65,8 @@ class MyMusicDetailsPageState extends State<MyMusicDetailsPage> {
   Duration more15seconds = new Duration(seconds: 15);
   bool _startRecordScreen = false;
 
+  bool musicIsInitializing = true;
+
   //Variables to increment views after watchin (onChanged, pageView.Builder)
   String musicCurrentStyle;
   String musicCurrentTimeStamp;
@@ -147,17 +149,18 @@ void timerForExtractStory() {
 
 
 
-
-
-
-  
-
   @override
   void initState() {
+    print('totalLikes :' + widget.totalLikes.toString());
     widget.audioPlayerController.onAudioPositionChanged.listen((event) {
       setState(() {
         audioPlayerControllerPosition = event.inMilliseconds;
       });
+      if(event.inMilliseconds > 0 && event.inMilliseconds < 2000) {
+        setState(() {
+          musicIsInitializing = false;
+        });
+      }
     });
     _listMusicController = new PageController(viewportFraction: 1, initialPage: widget.index);
     super.initState();
@@ -173,6 +176,7 @@ void timerForExtractStory() {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      resizeToAvoidBottomPadding: false,
       backgroundColor: Colors.transparent,
       body: new Container(
         height: MediaQuery.of(context).size.height,
@@ -453,9 +457,9 @@ void timerForExtractStory() {
                                                   new InkWell(
                                                     onTap: () {
                                                       if(widget.songsLikedMap.containsValue(ds.data()['timestamp'])) {
-                                                        unlikeRequest(ds.data()['style'], ds.data()['timestamp'], ds.data()['likes'], widget.totalLikes ,ds.data()['artistUID']);
+                                                        unlikeRequest(ds.data()['style'], ds.data()['timestamp'], ds.data()['likes'] ,ds.data()['artistUID']);
                                                       } else {
-                                                        likeRequest(ds.data()['style'], ds.data()['timestamp'], ds.data()['likes'], widget.totalLikes ,ds.data()['artistUID']);
+                                                        likeRequest(ds.data()['style'], ds.data()['timestamp'], ds.data()['likes'] ,ds.data()['artistUID']);
                                                       }
                                                     },
                                                     child: new Container(
@@ -487,6 +491,7 @@ void timerForExtractStory() {
                                                   new InkWell(
                                                     onTap: () {
                                                     showCupertinoModalBottomSheet(
+                                                      expand: true,
                                                       animationCurve: Curves.decelerate,
                                                       context: context,
                                                       builder: (context) =>
@@ -583,6 +588,7 @@ void timerForExtractStory() {
                                                             scrollController: _textFieldCommentScrollController,
                                                             maxLines: null,
                                                             minLines: 1,
+                                                            autofocus: true,
                                                             style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.normal),
                                                             cursorColor: Colors.yellowAccent,
                                                             controller: _commentTextEditingControler,
@@ -1276,16 +1282,37 @@ void timerForExtractStory() {
             left: 0.0,
             right: 0.0,
             bottom: 0.0,
-            child: new Column(
+            child: musicIsInitializing == true
+            ? new Center(
+              child: new Container(
+                height: MediaQuery.of(context).size.height*0.10,
+                width: MediaQuery.of(context).size.height*0.10,
+                decoration: new BoxDecoration(
+                  borderRadius: new BorderRadius.circular(10.0),
+                  color: Colors.black.withOpacity(0.5),
+                ),
+                child: new Padding(
+                  padding: EdgeInsets.all(30.0),
+                child: new Container(
+                  height: MediaQuery.of(context).size.height*0.06,
+                  width: MediaQuery.of(context).size.height*0.06,
+                  child: new CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.5))
+                  ),
+                ),
+                ),
+              ),
+            )
+            : new Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                  new AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0.0,
-                  ),
-                  ],
+                new AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0.0,
                 ),
-                ),
+              ],
+            ),
+            ),
                 showSetupToScreenshot == false
                 ? new Positioned(
                   top: 0.0,
@@ -1303,7 +1330,7 @@ void timerForExtractStory() {
                           children: [
                             //Divider
                             new Container(
-                              height: MediaQuery.of(context).size.height*0.07,
+                              height: MediaQuery.of(context).size.height*0.02,
                               width: MediaQuery.of(context).size.width,
                               color: Colors.transparent,
                             ),
@@ -1319,11 +1346,30 @@ void timerForExtractStory() {
                                     left: 0.0,
                                     right: 0.0,
                                     bottom: 0.0,
-                                     child: new LinearProgressIndicator(
-                                       backgroundColor: Colors.transparent,
-                                       valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
-                                       value: audioPlayerControllerPosition/ widget.audioPlayerControllerDuration,
-                                     ),
+                                    child: new Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                          new Container(
+                                            height: MediaQuery.of(context).size.height*0.01,
+                                            width: MediaQuery.of(context).size.width,
+                                            color: Colors.transparent,
+                                          ),
+                                          new Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              new Container(  
+                                                height: MediaQuery.of(context).size.height*0.06,
+                                                width: MediaQuery.of(context).size.height*0.06,
+                                                child: new CircularProgressIndicator(
+                                                backgroundColor: Colors.black.withOpacity(0.5),
+                                                valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
+                                                value: audioPlayerControllerPosition/widget.audioPlayerControllerDuration,
+                                                ),
+                                              ),
+                                            ],
+                                        ),
+                                      ],
+                                    ),
                                     ),
                                    new Positioned(
                                      top: 0.0,
@@ -1350,10 +1396,11 @@ void timerForExtractStory() {
                                                width: MediaQuery.of(context).size.height*0.06,
                                                decoration: new BoxDecoration(
                                                  shape: BoxShape.circle,
-                                                 color: Colors.yellowAccent,
+                                                 color: Colors.black.withOpacity(0.3),
                                                ),
                                                child: new Center(
                                                  child: new Image.asset('lib/assets/returnButton.png',
+                                                   color: Colors.white,
                                                    height: MediaQuery.of(context).size.height*0.03,
                                                    width: MediaQuery.of(context).size.height*0.03,
                                                  ),
@@ -1379,13 +1426,14 @@ void timerForExtractStory() {
                                                width: MediaQuery.of(context).size.height*0.06,
                                                decoration: new BoxDecoration(
                                                  shape: BoxShape.circle,
-                                                 color: Colors.yellowAccent,
+                                                 color: Colors.black.withOpacity(0.3),
                                                ),
                                                child: new Center(
                                                  child: new Image.asset(
                                                    audioIsOnPause == false 
                                                    ? 'lib/assets/pause.png'
                                                    : 'lib/assets/play.png',
+                                                   color: Colors.white,
                                                    height: MediaQuery.of(context).size.height*0.025,
                                                    width: MediaQuery.of(context).size.height*0.025,
                                                  ),
@@ -1401,10 +1449,11 @@ void timerForExtractStory() {
                                                width: MediaQuery.of(context).size.height*0.06,
                                                decoration: new BoxDecoration(
                                                  shape: BoxShape.circle,
-                                                 color: Colors.yellowAccent,
+                                                 color: Colors.black.withOpacity(0.3),
                                                ),
                                                child: new Center(
                                                  child: new Image.asset('lib/assets/forward.png',
+                                                   color: Colors.white,
                                                    height: MediaQuery.of(context).size.height*0.025,
                                                    width: MediaQuery.of(context).size.height*0.025,
                                                  ),
@@ -1496,7 +1545,7 @@ void timerForExtractStory() {
 
 
 
-  unlikeRequest(String musicStyle, String timeStamp, int likes, int totalLikes, String artistUID) {
+  unlikeRequest(String musicStyle, String timeStamp, int likes, String artistUID) {
     FirebaseFirestore.instance
       .collection(musicStyle)
       .doc(timeStamp)
@@ -1530,7 +1579,13 @@ void timerForExtractStory() {
                     .collection('users')
                     .doc(artistUID)
                     .update({
-                      'likes': totalLikes-1,
+                      'likes': widget.totalLikes-1,
+                    }).whenComplete(() {
+                      if(this.mounted) {
+                        setState(() {
+                          widget.totalLikes--;
+                        });
+                      }
                     });
                 });
            });
@@ -1541,7 +1596,7 @@ void timerForExtractStory() {
 
 
 
-  likeRequest(String musicStyle, String timeStamp, int likes, int totalLikes, String artistUID) {
+  likeRequest(String musicStyle, String timeStamp, int likes, String artistUID) {
     FirebaseFirestore.instance
       .collection(musicStyle)
       .doc(timeStamp)
@@ -1574,7 +1629,13 @@ void timerForExtractStory() {
                   .collection('users')
                   .doc(artistUID)
                   .update({
-                    'likes': totalLikes+1,
+                    'likes': widget.totalLikes+1,
+                  }).whenComplete(() {
+                    if(this.mounted) {
+                      setState(() {
+                        widget.totalLikes++;
+                      });
+                    }
                   });
               });
           });
@@ -1600,11 +1661,4 @@ void timerForExtractStory() {
           });
       });
   }
-
-
-
-
-
-
-
 }

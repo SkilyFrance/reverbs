@@ -1704,6 +1704,7 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                 'likes': 0,
                 'shopLink': _linkMusicShopController.value.text.length > 3 ? _linkMusicShopController.value.text.toString() : null,
                 'instagramLink': null,
+                'spotifyLink': null,
               }).whenComplete(() {
                 FirebaseFirestore.instance
                   .collection('users')

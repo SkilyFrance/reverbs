@@ -33,6 +33,7 @@ class ProfilePageState extends State<ProfilePage> {
   //Variables
   File _image;
   TextEditingController _linkMusicShopController = new TextEditingController();
+  TextEditingController _linkSpotifyController = new TextEditingController();
   TextEditingController _linkInstagramController = new TextEditingController();
   bool updatedInPublishing = false;
   int totalLikes;
@@ -203,7 +204,7 @@ class ProfilePageState extends State<ProfilePage> {
                                   return new Material(
                                 color: Colors.transparent,
                                 child: new Container(
-                                  height: MediaQuery.of(context).size.height*0.65,
+                                  height: MediaQuery.of(context).size.height*0.72,
                                   width: MediaQuery.of(context).size.width,
                                   color: Color(0xFF121212),
                                   child: 
@@ -285,6 +286,54 @@ class ProfilePageState extends State<ProfilePage> {
                                         width: MediaQuery.of(context).size.width*0.75,
                                         decoration: new BoxDecoration(
                                           borderRadius: new BorderRadius.circular(10.0),
+                                          color: Colors.grey[900],
+                                        ),
+                                        child: new Center(
+                                          child: new TextField(
+                                            showCursor: false,
+                                            onChanged: (value) {
+                                            _linkSpotifyController.value = new TextEditingValue(
+                                              text: value.toLowerCase(),
+                                              selection: _linkSpotifyController.selection
+                                              );
+                                            },
+                                            style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                            controller: _linkSpotifyController,
+                                            keyboardType: TextInputType.text,
+                                            textCapitalization: TextCapitalization.sentences,
+                                            minLines: 1,
+                                            maxLines: 1,
+                                            textAlign: TextAlign.center,
+                                            cursorColor: Colors.yellowAccent,
+                                            decoration: new InputDecoration(
+                                              hintText: 'Paste here your Spotify link',
+                                              hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
+                                              border: new OutlineInputBorder(
+                                                borderSide: BorderSide.none,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      ],
+                                    ),
+                                  ),
+                                  //Divider
+                                  new Container(
+                                    height: MediaQuery.of(context).size.height*0.02,
+                                    width: MediaQuery.of(context).size.width,
+                                  ),
+                                  new Container(
+                                    height: MediaQuery.of(context).size.height*0.07,
+                                    width: MediaQuery.of(context).size.width*0.75,
+                                    child: new Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                      new Container(
+                                        height: MediaQuery.of(context).size.height*0.07,
+                                        width: MediaQuery.of(context).size.width*0.75,
+                                        decoration: new BoxDecoration(
+                                          borderRadius: new BorderRadius.circular(10.0),
                                           color: Colors.grey[900]
                                         ),
                                         child: new Center(
@@ -304,7 +353,7 @@ class ProfilePageState extends State<ProfilePage> {
                                             textAlign: TextAlign.center,
                                             cursorColor: Colors.yellowAccent,
                                             decoration: new InputDecoration(
-                                              hintText: 'Paste here your instagram link',
+                                              hintText: 'Paste here your Instagram link',
                                               hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
                                               border: new OutlineInputBorder(
                                                 borderSide: BorderSide.none,
@@ -424,7 +473,7 @@ class ProfilePageState extends State<ProfilePage> {
                                            borderRadius: new BorderRadius.circular(10.0)
                                          ),
                                          child: new Center(
-                                           child: new Text('Upload new photo',
+                                           child: new Text('Upload profile photo',
                                            style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.bold),
                                            ),
                                          ),
@@ -460,6 +509,7 @@ class ProfilePageState extends State<ProfilePage> {
                                                   .update({
                                                     'profilePhoto': filePhotoURL,
                                                     'shopLink': _linkMusicShopController.value.text.length > 3 ? _linkMusicShopController.value.text.toString() : snapshotUser.data.data()['shopLink'],
+                                                    'spotifyLink': _linkSpotifyController.value.text.length > 3 ? _linkSpotifyController.value.text.toString() : snapshotUser.data.data()['spotifyLink'],
                                                     'instagramLink': _linkInstagramController.value.text.length > 3 ? _linkInstagramController.value.text.toString() : snapshotUser.data.data()['instagramLink'],
                                                   }).whenComplete(() {
                                                     modalSetState(() {
@@ -468,7 +518,7 @@ class ProfilePageState extends State<ProfilePage> {
                                                     });
                                                   });    
                                                 });
-                                          } else if(_linkMusicShopController.value.text.length > 3 || _linkInstagramController.value.text.length > 3) {
+                                          } else if(_linkMusicShopController.value.text.length > 3 || _linkInstagramController.value.text.length > 3 || _linkSpotifyController.value.text.length > 3) {
                                             modalSetState(() {
                                               updatedInPublishing = true;
                                             });
@@ -478,6 +528,7 @@ class ProfilePageState extends State<ProfilePage> {
                                               .doc(widget.currentUser)
                                               .update({
                                                 'shopLink': _linkMusicShopController.value.text.length > 3 ? _linkMusicShopController.value.text.toString() : snapshotUser.data.data()['shopLink'],
+                                                'spotifyLink': _linkSpotifyController.value.text.length > 3 ? _linkSpotifyController.value.text.toString() : snapshotUser.data.data()['spotifyLink'],
                                                 'instagramLink': _linkInstagramController.value.text.length > 3 ? _linkInstagramController.value.text.toString() : snapshotUser.data.data()['instagramLink'],
                                               }).whenComplete(() {
                                                 modalSetState(() {
@@ -655,6 +706,48 @@ class ProfilePageState extends State<ProfilePage> {
                           color: Colors.grey.withOpacity(0.5),
                           ),
                         ),
+                        ),
+                        //Divider
+                        new Container(
+                          height: MediaQuery.of(context).size.height*0.03,
+                          width: MediaQuery.of(context).size.width*0.04,
+                          ),
+                        //Spotify button
+                        snapshotUser.data.data()['spotifyLink'] != null
+                        ? new InkWell(
+                          onTap: () {
+                             _launchURL(snapshotUser.data.data()['spotifyLink']);
+                          },
+                        child: new Container(
+                          height: MediaQuery.of(context).size.height*0.05,
+                          width: MediaQuery.of(context).size.height*0.05,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: new BorderRadius.circular(4.0),
+                        ),
+                        child: new Center(
+                          child: new Image.asset('lib/assets/spotify.png',
+                          height: 25.0,
+                          width: 25.0,
+                          color: Colors.white,
+                          ),
+                        ),
+                        )
+                        )
+                        : new Container(
+                          height: MediaQuery.of(context).size.height*0.05,
+                          width: MediaQuery.of(context).size.height*0.05,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey[800].withOpacity(0.5),
+                          borderRadius: new BorderRadius.circular(5.0),
+                        ),
+                        child: new Center(
+                          child: new Image.asset('lib/assets/spotify.png',
+                          height: 25.0,
+                          width: 25.0,
+                          color: Colors.white.withOpacity(0.4),
+                          ),
+                        ),  
                         ),
                         //Divider
                         new Container(
@@ -1177,7 +1270,7 @@ class ProfilePageState extends State<ProfilePage> {
 
   }
 
-  updatesRequest(StateSetter setterParameters) async {
+  /*updatesRequest(StateSetter setterParameters) async {
     if(_image != null) {
         setterParameters(() {
         updatedInPublishing = true;
@@ -1195,6 +1288,7 @@ class ProfilePageState extends State<ProfilePage> {
           .update({
             'profilePhoto': filePhotoURL,
             'shopLink': _linkMusicShopController.value.text.length > 3 ? _linkMusicShopController.value.text.toString() : null,
+            'spotifyLink': _linkSpotifyController.value.text.length > 3 ? _linkSpotifyController.value.text.toString() : null,
             'instagramLink': _linkInstagramController.value.text.length > 3 ? _linkInstagramController.value.text.toString() : null,
           }).whenComplete(() {
             setterParameters(() {
@@ -1203,7 +1297,7 @@ class ProfilePageState extends State<ProfilePage> {
             });
           });    
         });
-  } else if(_linkMusicShopController.value.text.length > 3 || _linkInstagramController.value.text.length > 3) {
+  } else if(_linkMusicShopController.value.text.length > 3 || _linkInstagramController.value.text.length > 3 || _linkSpotifyController.value.text.length > 3) {
     setterParameters(() {
       updatedInPublishing = true;
     });
@@ -1213,6 +1307,7 @@ class ProfilePageState extends State<ProfilePage> {
       .doc(widget.currentUser)
       .update({
         'shopLink': _linkMusicShopController.value.text.length > 3 ? _linkMusicShopController.value.text.toString() : null,
+        'spotifyLink': _linkSpotifyController.value.text.length > 3 ? _linkSpotifyController.value.text.toString() : null,
         'instagramLink': _linkInstagramController.value.text.length > 3 ? _linkInstagramController.value.text.toString() : null,
       }).whenComplete(() {
         setterParameters(() {
@@ -1223,7 +1318,7 @@ class ProfilePageState extends State<ProfilePage> {
   } else {
     print('Nothing to update');
   }
-  }
+  }*/
 
     viewRequest(String musicStyle, String timeStamp, int views, String artistUID) {
     FirebaseFirestore.instance
