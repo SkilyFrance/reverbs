@@ -71,6 +71,12 @@ class UploadMusicPageState extends State<UploadMusicPage> {
   }
 
   @override
+  void dispose() {
+    audioPlayerForDuration.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
@@ -1244,11 +1250,11 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                 print('uploadedMusicProgress = $uploadedMusicProgress');
             });
             await uploadTaskForMusic;
-            storageForMusic.getDownloadURL().then((fileMusicURL) async {
-                await audioPlayerForDuration.setUrl(fileMusicURL);
-                int result = await audioPlayerForDuration.play(fileMusicURL, volume: 0.0);
-                if(result == 1) {
-                audioPlayerForDuration.getDuration().then((durationFileAudio) {
+            storageForMusic.getDownloadURL().then((fileMusicURL) {
+                audioPlayerForDuration.play(fileMusicURL, volume: 0).whenComplete(() async {
+                await Future.delayed(new Duration(milliseconds: 2000), () => 
+                audioPlayerForDuration.getDuration()).then((durationFileAudio) {
+                audioPlayerForDuration.stop();
                 FirebaseFirestore.instance
                   .collection('users')
                   .doc(widget.currentUser)
@@ -1299,9 +1305,8 @@ class UploadMusicPageState extends State<UploadMusicPage> {
                   });
                   });
                 });
-                } else {
-               print('Do nothing cause not initiazed');
-             }
+              
+                });
             });
         } else {
           print('music no exist now');

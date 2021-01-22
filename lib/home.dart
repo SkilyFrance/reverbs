@@ -33,6 +33,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   TabController _tabController;
   PageController _pageController;
   ScrollController _scrollViewController;
+  ScrollController _djListViewController;
   TextEditingController _searchTextEditingController = new TextEditingController();
   String artistQueryName;
   var top = 0.0;
@@ -70,6 +71,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
     print(widget.currentUserType);
     _tabController = new TabController(length: 6, vsync: this);
     _scrollViewController = new ScrollController();
+    _djListViewController = new ScrollController();
     listenIfAlreadyliked();
     super.initState();
   }
@@ -793,6 +795,8 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                       height: MediaQuery.of(context).size.height,
                       width: MediaQuery.of(context).size.width,
                       child: new ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        controller: _djListViewController,
                         itemCount: snapshot.data.documents.length,
                         itemBuilder: (BuildContext context, int index) {
                           DocumentSnapshot ds = snapshot.data.documents[index];

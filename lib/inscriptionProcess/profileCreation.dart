@@ -63,9 +63,17 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
   String _dateTimeForMusicUpload;
   final picker = ImagePicker();
 
+  AudioPlayer audioPlayer;
+
   //CreationProfileCircular//
   bool profileInCreation = true;
   var uploadedMusicProgress;
+
+  @override
+  void initState() {
+    audioPlayer = new AudioPlayer(mode: PlayerMode.MEDIA_PLAYER);
+    super.initState();
+  }
   
 
   @override
@@ -1685,9 +1693,10 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
             });
             await uploadTaskForMusic;
             storageForMusic.getDownloadURL().then((fileMusicURL){
-              AudioPlayer audioPlayer = new AudioPlayer();
-              audioPlayer.setUrl(fileMusicURL);
-              audioPlayer.getDuration().then((durationFileAudio) {
+              audioPlayer.play(fileMusicURL, volume: 0).whenComplete(() async {
+                await Future.delayed(new Duration(milliseconds: 2000), () =>
+                audioPlayer.getDuration()).then((durationFileAudio) {
+                audioPlayer.stop();
             FirebaseFirestore.instance
               .collection('users')
               .doc(widget.currentUser)
@@ -1758,6 +1767,7 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                   });
               });
               });
+               });
               });
           } else {
             print(' _music no exist');
