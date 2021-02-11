@@ -31,8 +31,7 @@ class _SplashPageState extends State<SplashPage> {
           if(value.exists) {
             Navigator.pushReplacement(context, new PageRouteBuilder(pageBuilder: (_,__,___) => 
             new NavigationPage(
-              currentUser: user.uid, 
-              currentUserType: value.data()['iam'],
+              currentUser: user.uid,
               currentUserUsername: value.data()['userName'],
               currentUserPhoto: value.data()['profilePhoto'],
               )));

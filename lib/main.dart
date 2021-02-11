@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:SONOZ/inscriptionProcess/landingPage.dart';
 import 'package:SONOZ/splash.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'home.dart';
+import 'Discover/discoverPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'navigation.dart';
 
@@ -20,7 +21,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Colors.white,
+        primaryColorDark: Colors.white,
+        brightness: Brightness.dark,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: new FutureBuilder(
@@ -30,18 +33,20 @@ class MyApp extends StatelessWidget {
         if(snapshot.hasError) {
           return new Container(
             color: Colors.black,
-            child: new Center(child: new CircularProgressIndicator(
-            valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
-          )));
+            child: new CupertinoActivityIndicator(
+              animating: true,
+            ),
+            );
         }
         if(snapshot.connectionState == ConnectionState.done) {
           return new SplashPage();
         }
          return new Container(
          color: Colors.black,
-         child: new Center(child: new CircularProgressIndicator(
-         valueColor: new AlwaysStoppedAnimation<Color>(Colors.yellowAccent),
-       )));
+         child: new CupertinoActivityIndicator(
+           animating: true,
+         ),
+         );
       }
       ),
     );

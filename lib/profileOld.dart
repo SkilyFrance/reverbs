@@ -3,7 +3,7 @@ import 'package:SONOZ/inscriptionProcess/landingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:SONOZ/permissionsHandler.dart';
-import 'package:SONOZ/profile/myMusicDetails.dart';
+import 'package:SONOZ/home/myMusicDetails.dart';
 import 'package:SONOZ/services/slideRoute.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,7 +13,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'home/uploadMusic.dart';
+import 'homeOld/uploadMusic.dart';
 
 class ProfilePage extends StatefulWidget {
 

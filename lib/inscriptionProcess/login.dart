@@ -1,5 +1,6 @@
 import 'package:SONOZ/inscriptionProcess/landingPage.dart';
 import 'package:SONOZ/inscriptionProcess/profileCreation.dart';
+import 'package:SONOZ/inscriptionProcess/register.dart';
 import 'package:SONOZ/navigation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,12 +17,7 @@ class LoginPageState extends State<LoginPage> {
 
   //TextEditing Controller
   TextEditingController _emailEditingController = new TextEditingController();
-  TextEditingController _firstNumberCodeController = new TextEditingController();
-  TextEditingController _secondNumberCodeController = new TextEditingController();
-  TextEditingController _thirdNumberCodeController = new TextEditingController();
-  TextEditingController _fourthNumberCodeController = new TextEditingController();
-  TextEditingController _fithNumberCodeController = new TextEditingController();
-  TextEditingController _sixthNumberCodeController = new TextEditingController();
+  TextEditingController _passwordEditingController = new TextEditingController();
 
   bool passwordShowed = true;
   bool errorIsOccurred = false;
@@ -44,14 +40,6 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    /////
-    final _firstFieldFocus = new FocusNode();
-    final _secondFieldFocus = new FocusNode();
-    final _thirdFieldFocus = new FocusNode();
-    final _fourthFieldFocus = new FocusNode();
-    final _fithFieldFocus = new FocusNode();
-    final _sixthFieldFocus = new FocusNode();
-    /////
     return new Scaffold(
       backgroundColor: Colors.transparent,
       body: new Container(
@@ -72,10 +60,9 @@ class LoginPageState extends State<LoginPage> {
               color: Colors.transparent,
             ),
             new Container(
-              height: MediaQuery.of(context).size.height*0.09,
               color: Colors.transparent,
               child: new Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   new Container(
                     child: new Row(
@@ -88,25 +75,33 @@ class LoginPageState extends State<LoginPage> {
                         new Container(
                           color: Colors.transparent,
                           child: new Center(
-                          child: new Text('Reverbs',
-                          style: new TextStyle(color: Colors.white, fontSize: 30.0, fontWeight: FontWeight.bold),
+                          child: new Text('Connect to',
+                          style: new TextStyle(color: Colors.white, fontSize: 40.0, fontWeight: FontWeight.bold),
                           )),
                         ),
+                        ],
+                      ),
+                  ),
+                  //Divider
+                  new Container(
+                    height: MediaQuery.of(context).size.height*0.01,
+                    width: MediaQuery.of(context).size.width,
+                  ),
+                  new Container(
+                    child: new Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
                         new Container(
-                          height: MediaQuery.of(context).size.height*0.06,
-                          width: MediaQuery.of(context).size.width*0.02,
+                          width: MediaQuery.of(context).size.width*0.05,
                           color: Colors.transparent,
                         ),
                         new Container(
-                          height: MediaQuery.of(context).size.height*0.06,
                           color: Colors.transparent,
                           child: new Center(
-                          child: new Image.asset('lib/assets/logo.png',
-                          height: 30.0,
-                          width: 30.0,
-                          color: Colors.yellowAccent,
+                          child: new Text('your account.',
+                          style: new TextStyle(color: Colors.grey, fontSize: 35.0, fontWeight: FontWeight.bold),
                           )),
-                          ),
+                        ),
                         ],
                       ),
                   ),
@@ -114,7 +109,7 @@ class LoginPageState extends State<LoginPage> {
               ),
             ),
            new Container(
-             height: MediaQuery.of(context).size.height*0.10,
+             height: MediaQuery.of(context).size.height*0.08,
              color: Colors.transparent,
            ),
            new Container(
@@ -134,7 +129,7 @@ class LoginPageState extends State<LoginPage> {
                           height: MediaQuery.of(context).size.height*0.05,
                           child: new Center(
                             child: new Text('Connect with your email.',
-                            style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                            style: new TextStyle(color: Colors.grey[800], fontSize: 20.0, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -155,6 +150,7 @@ class LoginPageState extends State<LoginPage> {
                             style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
                             controller: _emailEditingController,
                             keyboardType: TextInputType.emailAddress,
+                            keyboardAppearance: Brightness.dark,
                             textCapitalization: TextCapitalization.words,
                             minLines: 1,
                             maxLines: 1,
@@ -179,283 +175,42 @@ class LoginPageState extends State<LoginPage> {
                           height: MediaQuery.of(context).size.height*0.05,
                           child: new Center(
                             child: new Text('Enter your password.',
-                            style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                            style: new TextStyle(color: Colors.grey[800], fontSize: 20.0, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
-                       new Container(
-                         height: MediaQuery.of(context).size.height*0.07,
-                         width: MediaQuery.of(context).size.width,
-                         child: new Row(
-                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                           children: [
-                             //1stNumber
-                           new Container(
-                             height: MediaQuery.of(context).size.height*0.07,
-                             width: MediaQuery.of(context).size.width*0.12,
-                             decoration: new BoxDecoration(
-                               borderRadius: new BorderRadius.circular(10.0),
-                               color: Colors.grey[900]
-                             ),
-                             child: new Center(
-                               child: new TextField(
-                                 enableInteractiveSelection: _firstFieldFocus.hasFocus ? true : false,
-                                 focusNode: _firstFieldFocus,
-                                 onChanged: (value) {
-                                   if(value.isEmpty) {
-                                     FocusScope.of(context).requestFocus(_firstFieldFocus);
-                                   } else {
-                                     _firstFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_secondFieldFocus);
-                                   }
-                                 },
-                                 maxLength: 1,
-                                 autofocus: true,
-                                 obscureText: passwordShowed == false ? false : true,
-                                 style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                 controller: _firstNumberCodeController,
-                                 keyboardType: TextInputType.text,
-                                 textCapitalization: TextCapitalization.words,
-                                 minLines: 1,
-                                 maxLines: 1,
-                                 textAlign: TextAlign.center,
-                                 cursorColor: Colors.transparent,
-                                 cursorHeight: 0.0,
-                                 decoration: new InputDecoration(
-                                   counterText: '',
-                                   hintText: '0',
-                                   hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
-                                   border: new OutlineInputBorder(
-                                     borderSide: BorderSide.none,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                           //2ndContainer
-                           new Container(
-                             height: MediaQuery.of(context).size.height*0.07,
-                             width: MediaQuery.of(context).size.width*0.12,
-                             decoration: new BoxDecoration(
-                               borderRadius: new BorderRadius.circular(10.0),
-                               color: Colors.grey[900]
-                             ),
-                             child: new Center(
-                               child: new TextField(
-                                 onChanged: (value) {
-                                   if(value.isEmpty) {
-                                     _secondFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_firstFieldFocus);
-                                   } else {
-                                     _secondFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_thirdFieldFocus);
-                                   }
-                                 },
-                                 autofocus: true,
-                                 obscureText: passwordShowed == false ? false : true,
-                                 enableInteractiveSelection: _secondFieldFocus.hasFocus ? true : false,
-                                 focusNode: _secondFieldFocus,
-                                 maxLength: 1,
-                                 style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                 controller: _secondNumberCodeController,
-                                 keyboardType: TextInputType.text,
-                                 textCapitalization: TextCapitalization.words,
-                                 minLines: 1,
-                                 maxLines: 1,
-                                 textAlign: TextAlign.center,
-                                 cursorColor: Colors.transparent,
-                                 cursorHeight: 0.0,
-                                 decoration: new InputDecoration(
-                                   counterText: '',
-                                   hintText: '0',
-                                   hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
-                                   border: new OutlineInputBorder(
-                                     borderSide: BorderSide.none,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                           //ThirdContainer
-                           new Container(
-                             height: MediaQuery.of(context).size.height*0.07,
-                             width: MediaQuery.of(context).size.width*0.12,
-                             decoration: new BoxDecoration(
-                               borderRadius: new BorderRadius.circular(10.0),
-                               color: Colors.grey[900]
-                             ),
-                             child: new Center(
-                               child: new TextField(
-                                 onChanged: (value) {
-                                   if(value.isEmpty) {
-                                     _thirdFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_secondFieldFocus);
-                                   } else {
-                                     _thirdFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_fourthFieldFocus);
-                                   }
-                                 },
-                                 autofocus: true,
-                                 obscureText: passwordShowed == false ? false : true,
-                                 enableInteractiveSelection: _thirdFieldFocus.hasFocus ? true : false,
-                                 focusNode: _thirdFieldFocus,
-                                 maxLength: 1,
-                                 style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                 controller: _thirdNumberCodeController,
-                                 keyboardType: TextInputType.text,
-                                 textCapitalization: TextCapitalization.words,
-                                 minLines: 1,
-                                 maxLines: 1,
-                                 cursorHeight: 0.0,
-                                 textAlign: TextAlign.center,
-                                 cursorColor: Colors.transparent,
-                                 decoration: new InputDecoration(
-                                   counterText: '',
-                                   hintText: '0',
-                                   hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
-                                   border: new OutlineInputBorder(
-                                     borderSide: BorderSide.none,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                           //FourthContainer
-                           new Container(
-                             height: MediaQuery.of(context).size.height*0.07,
-                             width: MediaQuery.of(context).size.width*0.12,
-                             decoration: new BoxDecoration(
-                               borderRadius: new BorderRadius.circular(10.0),
-                               color: Colors.grey[900]
-                             ),
-                             child: new Center(
-                               child: new TextField(
-                                 onChanged: (value) {
-                                   if(value.isEmpty) {
-                                     _fourthFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_thirdFieldFocus);
-                                   } else {
-                                     _fourthFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_fithFieldFocus);
-                                   }
-                                 },
-                                 autofocus: true,
-                                 obscureText: passwordShowed == false ? false : true,
-                                 enableInteractiveSelection: _fourthFieldFocus.hasFocus ? true : false,
-                                 focusNode: _fourthFieldFocus,
-                                 maxLength: 1,
-                                 style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                 controller: _fourthNumberCodeController,
-                                 keyboardType: TextInputType.text,
-                                 textCapitalization: TextCapitalization.words,
-                                 minLines: 1,
-                                 maxLines: 1,
-                                 textAlign: TextAlign.center,
-                                 cursorHeight: 0.0,
-                                 cursorColor: Colors.transparent,
-                                 decoration: new InputDecoration(
-                                   counterText: '',
-                                   hintText: '0',
-                                   hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
-                                   border: new OutlineInputBorder(
-                                     borderSide: BorderSide.none,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                           //FithContainer
-                           new Container(
-                             height: MediaQuery.of(context).size.height*0.07,
-                             width: MediaQuery.of(context).size.width*0.12,
-                             decoration: new BoxDecoration(
-                               borderRadius: new BorderRadius.circular(10.0),
-                               color: Colors.grey[900]
-                             ),
-                             child: new Center(
-                               child: new TextField(
-                                 onChanged: (value) {
-                                   if(value.isEmpty) {
-                                     _fithFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_fourthFieldFocus);
-                                   } else {
-                                     _fithFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_sixthFieldFocus);
-                                   }
-                                 },
-                                 autofocus: true,
-                                 obscureText: passwordShowed == false ? false : true,
-                                 enableInteractiveSelection: _fithFieldFocus.hasFocus ? true : false,
-                                 focusNode: _fithFieldFocus,
-                                 maxLength: 1,
-                                 style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                 controller: _fithNumberCodeController,
-                                 keyboardType: TextInputType.text,
-                                 textCapitalization: TextCapitalization.words,
-                                 minLines: 1,
-                                 maxLines: 1,
-                                 textAlign: TextAlign.center,
-                                 cursorHeight: 0.0,
-                                 cursorColor: Colors.transparent,
-                                 decoration: new InputDecoration(
-                                   counterText: '',
-                                   hintText: '0',
-                                   hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
-                                   border: new OutlineInputBorder(
-                                     borderSide: BorderSide.none,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                           //SixthContainer
-                           new Container(
-                             height: MediaQuery.of(context).size.height*0.07,
-                             width: MediaQuery.of(context).size.width*0.12,
-                             decoration: new BoxDecoration(
-                               borderRadius: new BorderRadius.circular(10.0),
-                               color: Colors.grey[900]
-                             ),
-                             child: new Center(
-                               child: new TextField(
-                                 onChanged: (value) {
-                                   if(value.isEmpty) {
-                                     _sixthFieldFocus.unfocus();
-                                     FocusScope.of(context).requestFocus(_fithFieldFocus);
-                                   } else {
-                                   setState(() {
-                                     currentUserPassword = (_firstNumberCodeController.value.text.toString() + _secondNumberCodeController.value.text.toString() + _thirdNumberCodeController.value.text.toString()+ _fourthNumberCodeController.value.text.toString() + _fithNumberCodeController.value.text.toString() + _sixthNumberCodeController.value.text.toString());
-                                   });
-                                   }
-                                 },
-                                 autofocus: true,
-                                 obscureText: passwordShowed == false ? false : true,
-                                 enableInteractiveSelection: _sixthFieldFocus.hasFocus ? true : false,
-                                 focusNode: _sixthFieldFocus,
-                                 maxLength: 1,
-                                 style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                 controller: _sixthNumberCodeController,
-                                 keyboardType: TextInputType.text,
-                                 textCapitalization: TextCapitalization.words,
-                                 minLines: 1,
-                                 maxLines: 1,
-                                 textAlign: TextAlign.center,
-                                 cursorHeight: 0.0,
-                                 cursorColor: Colors.transparent,
-                                 decoration: new InputDecoration(
-                                   counterText: '',
-                                   hintText: '0',
-                                   hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
-                                   border: new OutlineInputBorder(
-                                     borderSide: BorderSide.none,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                           ],
-                         ),
-                       ),
+                        new Container(
+                          height: MediaQuery.of(context).size.height*0.07,
+                          width: MediaQuery.of(context).size.width*0.75,
+                          decoration: new BoxDecoration(
+                            borderRadius: new BorderRadius.circular(10.0),
+                            color: Colors.grey[900]
+                          ),
+                          child: new TextField(
+                            obscureText: passwordShowed,
+                            keyboardAppearance: Brightness.dark,
+                            style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                            controller: _passwordEditingController,
+                            textCapitalization: TextCapitalization.words,
+                            minLines: 1,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            cursorColor: Colors.cyan,
+                            decoration: new InputDecoration(
+                            errorBorder: new OutlineInputBorder(
+                              borderRadius: new BorderRadius.circular(30.0),
+                              borderSide: new BorderSide(
+                                color: Colors.yellowAccent,
+                              ),
+                            ),
+                              hintText: 'password',
+                              hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
+                              border: new OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
                        new Container(
                          height: MediaQuery.of(context).size.height*0.05,
                          width: MediaQuery.of(context).size.width,
@@ -479,7 +234,6 @@ class LoginPageState extends State<LoginPage> {
              ),
             errorIsOccurred == true 
             ? new Container(
-              height: MediaQuery.of(context).size.height*0.05,
               width: MediaQuery.of(context).size.width,
               child: new Center(
               child: new Text('Email or password wrong. Try again',
@@ -488,7 +242,7 @@ class LoginPageState extends State<LoginPage> {
             )
             : new Container(),
            new Container(
-             height: MediaQuery.of(context).size.height*0.18,
+             height: MediaQuery.of(context).size.height*0.25,
              color: Colors.transparent,
              child: new Column(
                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -496,22 +250,11 @@ class LoginPageState extends State<LoginPage> {
                  //START
                  new InkWell(
                    onTap: () {
-                     if(_emailEditingController.value.text.length > 4  
-                     && _firstNumberCodeController.value.text != null
-                     && _secondNumberCodeController.value.text != null
-                     && _thirdNumberCodeController.value.text != null
-                     && _fourthNumberCodeController.value.text != null
-                     && _fithNumberCodeController.value.text != null
-                     && _sixthNumberCodeController.value.text != null) {
+                     if(_emailEditingController.value.text.length > 4 && _passwordEditingController.value.text.length > 3) {
                        FirebaseAuth.instance
                         .signInWithEmailAndPassword(
-                          email: _emailEditingController.text, 
-                          password: _firstNumberCodeController.value.text.toString()
-                          +_secondNumberCodeController.value.text.toString()
-                          +_thirdNumberCodeController.value.text.toString()
-                          +_fourthNumberCodeController.value.text.toString()
-                          +_fithNumberCodeController.value.text.toString()
-                          +_sixthNumberCodeController.value.text.toString())
+                          email: _emailEditingController.value.text.toString(), 
+                          password: _passwordEditingController.value.text.toString())
                         .then((authResult) {
                           FirebaseFirestore.instance
                             .collection('users')
@@ -522,7 +265,6 @@ class LoginPageState extends State<LoginPage> {
                                   Navigator.pushAndRemoveUntil(context, new PageRouteBuilder(pageBuilder: (_,__,___) => 
                                   new NavigationPage(
                                   currentUser: authResult.user.uid, 
-                                  currentUserType: value.data()['iam'],
                                   currentUserUsername: value.data()['userName'],
                                   currentUserPhoto: value.data()['profilePhoto'])), 
                                   (route) => false);
@@ -553,12 +295,16 @@ class LoginPageState extends State<LoginPage> {
                    height: MediaQuery.of(context).size.height*0.08,
                    width: MediaQuery.of(context).size.width*0.8,
                    decoration: new BoxDecoration(
-                     color: Colors.yellowAccent,
+                     color: Colors.transparent,
+                     border: new Border.all(
+                       width: 2.0,
+                       color: Colors.deepPurpleAccent,
+                     ),
                      borderRadius: new BorderRadius.circular(10.0)
                    ),
                    child: new Center(
-                     child: new Text('START',
-                     style: new TextStyle(color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.bold),
+                     child: new Text('SIGN IN',
+                     style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
                      ),
                    ),
                  ),
@@ -568,7 +314,7 @@ class LoginPageState extends State<LoginPage> {
                    hoverColor: Colors.transparent,
                    onPressed: () {
                     Navigator.pushAndRemoveUntil(
-                    context, new PageRouteBuilder(pageBuilder: (_,__,___) => new LandingPage()),
+                    context, new PageRouteBuilder(pageBuilder: (_,__,___) => new RegisterPage()),
                     (route) => false);
                    }, 
                    child: new Text("DON'T HAVE AN ACCOUNT",

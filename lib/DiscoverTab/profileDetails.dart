@@ -1,4 +1,4 @@
-import 'package:SONOZ/profile/myMusicDetails.dart';
+import 'package:SONOZ/home/myMusicDetails.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

@@ -1,18 +1,21 @@
 import 'package:SONOZ/DiscoverTab/discoverTab.dart';
-import 'package:SONOZ/profile.dart';
+import 'package:SONOZ/home/home.dart';
+import 'package:SONOZ/profileOld.dart';
+import 'package:SONOZ/services/notifications.dart';
+import 'package:SONOZ/storage/storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'home.dart';
-import 'following.dart';
+import 'Discover/discoverPage.dart';
+import 'chat/disccusions.dart';
 
 class NavigationPage extends StatefulWidget {
 
   String currentUser;
-  String currentUserType;
   String currentUserUsername;
   String currentUserPhoto;
 
-  NavigationPage({Key key, this.currentUser, this.currentUserType, this.currentUserUsername, this.currentUserPhoto}) : super(key: key);
+  NavigationPage({Key key, this.currentUser, this.currentUserUsername, this.currentUserPhoto}) : super(key: key);
 
   @override 
   NavigationPageState createState() => NavigationPageState();
@@ -23,7 +26,12 @@ class NavigationPageState extends State<NavigationPage> {
 
   @override 
   void initState() {
-    currentScreen = new HomePage(currentUser: widget.currentUser, currentUserType: widget.currentUserType, currentUserUsername: widget.currentUserUsername, currentUserPhoto: widget.currentUserPhoto);
+    print('currentUser = '+ widget.currentUser);
+    currentScreen = new HomePage(
+      currentUser: widget.currentUser,
+      currentUserPhoto: widget.currentUserPhoto,
+      currentUserUsername: widget.currentUserUsername,
+    );
     currentTab = 0;
     super.initState();
   }
@@ -34,8 +42,9 @@ class NavigationPageState extends State<NavigationPage> {
   int currentTab = 0; 
   final List<Widget> screens = [
     new HomePage(),
-    new FollowingPage(),
-    new ProfilePage(),
+    new DiscoverPage(),
+    new DiscussionsPage(),
+    new StoragePage(),
   ];
   final PageStorageBucket bucket = new PageStorageBucket();
   Widget currentScreen;
@@ -43,160 +52,37 @@ class NavigationPageState extends State<NavigationPage> {
 
   @override 
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: new PageStorage(
-        bucket: bucket, 
-        child: currentScreen,
-        ),
-        bottomNavigationBar: new BottomAppBar(
-          color: Colors.black,
-          elevation: 0.0,
-          child: new Container(
-            height: 50.0,
-            decoration: new BoxDecoration(
-              borderRadius: new BorderRadius.circular(20.0),
-              color: Colors.transparent,
-            ),
-            child: new Padding(
-              padding: EdgeInsets.only(top: 5.0),
-            child: widget.currentUserType == 'iamDJ'
-            ? new Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                  new MaterialButton(
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        new Image.asset(currentTab == 0 ? 'lib/assets/homeActive.png' : 'lib/assets/home.png', color: currentTab == 0 ? Colors.white : Colors.grey, height: 19.0, width: 19.0),
-                        new Text('Home', 
-                        style: new TextStyle(color: currentTab == 0 ? Colors.white : Colors.grey, fontSize: 10.0, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    minWidth: 20.0,
-                    onPressed: (){
-                      setState(() {
-                        currentScreen = new HomePage(
-                          currentUser: widget.currentUser,
-                          currentUserType: widget.currentUserType,
-                          currentUserUsername: widget.currentUserUsername,
-                          currentUserPhoto: widget.currentUserPhoto,
-                        );
-                        currentTab = 0;
-                      });
-                    },
-                    ),
-                new MaterialButton(
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        new Image.asset('lib/assets/subscription.png' , color: currentTab == 1 ? Colors.white : Colors.grey, height: 20.0, width: 20.0,),
-                        new Text('Following', 
-                        style: new TextStyle(color: currentTab == 1 ? Colors.white : Colors.grey, fontSize: 10.0, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  minWidth: 40.0,
-                  onPressed: (){
-                      setState(() {
-                        currentScreen = new FollowingPage(
-                          currentUser: widget.currentUser,
-                          currentUserUsername: widget.currentUserUsername,
-                          currentUserType: widget.currentUserType,
-                        );
-                        currentTab = 1;
-                      });
-                  },
-                  ),
-                  new MaterialButton(
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        new Image.asset( currentTab == 2 ? 'lib/assets/userActive.png' : 'lib/assets/user.png' , color: currentTab == 2 ? Colors.white : Colors.grey, height: 20.0, width: 20.0,),
-                        new Text('Profile', 
-                        style: new TextStyle(color: currentTab == 2 ? Colors.white : Colors.grey, fontSize: 10.0, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  minWidth: 40.0,
-                  onPressed: (){
-                      setState(() {
-                        currentScreen = new ProfilePage(
-                          currentUser: widget.currentUser,
-                          currentUserUsername: widget.currentUserUsername,
-                          currentUserPhoto: widget.currentUserPhoto,
-                          );
-                        currentTab = 2;
-                      });
-                  },
-                  ),
-              ],
-            )
-////// USER IS A FAN /////////
-            : new Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                  new MaterialButton(
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        new Image.asset(currentTab == 0 ? 'lib/assets/homeActive.png' : 'lib/assets/home.png', color: currentTab == 0 ? Colors.white : Colors.grey, height: 19.0, width: 19.0),
-                        new Text('Home', 
-                        style: new TextStyle(color: currentTab == 0 ? Colors.white : Colors.grey, fontSize: 10.0, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    minWidth: 20.0,
-                    onPressed: (){
-                      setState(() {
-                        currentScreen = new HomePage(
-                          currentUser: widget.currentUser,
-                          currentUserType: widget.currentUserType,
-                          currentUserUsername: widget.currentUserUsername,
-                          currentUserPhoto: widget.currentUserPhoto,
-                        );
-                        currentTab = 0;
-                      });
-                    },
-                    ),
-                new MaterialButton(
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        new Image.asset('lib/assets/subscription.png' , color: currentTab == 1 ? Colors.white : Colors.grey, height: 20.0, width: 20.0,),
-                        new Text('Following', 
-                        style: new TextStyle(color: currentTab == 1 ? Colors.white : Colors.grey, fontSize: 10.0, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  minWidth: 40.0,
-                  onPressed: (){
-                      setState(() {
-                        currentScreen = new FollowingPage(
-                          currentUser: widget.currentUser,
-                          currentUserUsername: widget.currentUserUsername,
-                          currentUserType: widget.currentUserType,
-                        );
-                        currentTab = 1;
-                      });
-                  },
-                  ),
-              ],
-            ),
-            ),
-          ),
-          ),
-    );
+    return new CupertinoTabScaffold(
+      tabBar: new CupertinoTabBar(
+        activeColor: Colors.white,
+        backgroundColor: Colors.black.withOpacity(0.7),
+        items: [
+            new BottomNavigationBarItem(icon: new Icon(CupertinoIcons.house), label: 'Home'),
+            new BottomNavigationBarItem(icon: new Icon(CupertinoIcons.search), label: 'Discover'),
+            new BottomNavigationBarItem(icon: new Icon(CupertinoIcons.bubble_right), label: 'Discussions'),
+            new BottomNavigationBarItem(icon: new Icon(CupertinoIcons.bell), label: 'Notifications'),
+        ],
+        ), 
+      tabBuilder: (context, index) {
+            switch (index) {
+              case 0:
+                return HomePage(
+                  currentUser: widget.currentUser,
+                  currentUserPhoto: widget.currentUserPhoto,
+                  currentUserUsername: widget.currentUserUsername,
+                );
+                break;
+              case 1:
+                return DiscoverPage();
+                break;
+              case 2:
+                return DiscussionsPage();
+                break;
+              default:
+                return NotificationsPage();
+                break;
+            }
+      },
+      );
   }
 }

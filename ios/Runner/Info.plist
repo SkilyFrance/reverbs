@@ -6,12 +6,23 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Reverbs</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>CFBundleName</key>
 	<string>reverb</string>
 	<key>CFBundlePackageType</key>
@@ -26,6 +37,8 @@
 	<true/>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Necessary to upload a song to Reverb</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>Necessary to download your tracks.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Necessary to enjoy with Reverb</string>
 	<key>NSContactsUsageDescription</key>
