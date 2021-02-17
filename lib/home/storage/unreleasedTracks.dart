@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 
@@ -38,6 +39,15 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
 
   ScrollController _unReleasedTracks = new ScrollController();
   TextEditingController _titleTextEditingController = new TextEditingController();
+
+
+  //Variables for cupertinoActionSheet //
+  bool _moveToReleased = false;
+  bool _modificationInProgress = false;
+  bool _deleteInProgress = false;
+  bool _downloadInProgress = false;
+  var _trackDownloadingProgress;
+
 
   int musicStyleSelectedValue;
   //Variables for new track uploaded //
@@ -545,6 +555,7 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                                   .set({
                                                     'songLocked': true,
                                                     'title': _titleTextEditingController.text.length >= 2 ? _titleTextEditingController.value.text : null,
+                                                    'extension': _fileMusicExtension,
                                                     'artistProfilePhoto': widget.currentUserPhoto,
                                                     'artistUsername': widget.currentUserUsername,
                                                     'artistUID': widget.currentUser,
@@ -553,18 +564,18 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                                     'fileMusicURL': fileMusicUrl,
                                                     'fileMusicDuration': durationFileAudio,
                                                     'style': 
-                                                    musicStyleSelectedValue == 0 ? 'futureHouse' 
-                                                    : musicStyleSelectedValue == 1 ? 'progressiveHouse' 
-                                                    : musicStyleSelectedValue == 2 ? 'deepHouse' 
-                                                    : musicStyleSelectedValue == 3 ? 'acidHouse'
-                                                    : musicStyleSelectedValue == 4 ? 'chillHouse'
-                                                    : musicStyleSelectedValue == 5 ? 'trap'
-                                                    : musicStyleSelectedValue == 6 ? 'dubstep'
-                                                    : musicStyleSelectedValue == 7 ? 'dirtyDutch'
-                                                    : musicStyleSelectedValue == 8 ? 'techno'
-                                                    : musicStyleSelectedValue == 9 ? 'trance'
-                                                    : musicStyleSelectedValue == 10 ? 'hardstyle'
-                                                    : 'futureHouse',
+                                                    musicStyleSelectedValue == 0 ? 'MusicfutureHouse' 
+                                                    : musicStyleSelectedValue == 1 ? 'MusicprogressiveHouse' 
+                                                    : musicStyleSelectedValue == 2 ? 'MusicdeepHouse' 
+                                                    : musicStyleSelectedValue == 3 ? 'MusicacidHouse'
+                                                    : musicStyleSelectedValue == 4 ? 'MusicchillHouse'
+                                                    : musicStyleSelectedValue == 5 ? 'Musictrap'
+                                                    : musicStyleSelectedValue == 6 ? 'Musicdubstep'
+                                                    : musicStyleSelectedValue == 7 ? 'MusicdirtyDutch'
+                                                    : musicStyleSelectedValue == 8 ? 'Musictechno'
+                                                    : musicStyleSelectedValue == 9 ? 'Musictrance'
+                                                    : musicStyleSelectedValue == 10 ? 'Musichardstyle'
+                                                    : 'MusicfutureHouse',
                                                   }).whenComplete(() {
                                                     print('Cloud Firestore : Metadatas are stored.');
                                                     modalSetState((){
@@ -605,6 +616,13 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
           ];
         }, 
         body: new Container(
+          child: new Stack(
+            children: [
+              new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
           child: new SingleChildScrollView(
           child: new Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -646,7 +664,9 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                     animating: true,
                                     radius: 15.0,
                                   ),
-                            )]));
+                            )]
+                            ),
+                            );
                           } 
                         if(snapshot.hasError) {
                           return new Container(
@@ -659,7 +679,10 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                 new Center(child: new Text('Please, check your network connection.', style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold))),
                                 new Padding(
                                   padding: EdgeInsets.only(top: 30.0),
-                                child: new Icon(Icons.network_check_outlined, color: Colors.white,size: 40.0))]));
+                                child: new Icon(Icons.network_check_outlined, color: Colors.white,size: 40.0),
+                                ),
+                                ]),
+                                );
                         }
                         if(!snapshot.hasData) {
                           return new Container(
@@ -711,15 +734,38 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                         return new Container(
                           height: MediaQuery.of(context).size.height*0.10,
                           width: MediaQuery.of(context).size.width,
-                          child: new ListTile(
+                          color: Colors.transparent,
+                          child: 
+                          _moveToReleased == false
+                          ? new ListTile(
                             leading: new Container(
                             height: MediaQuery.of(context).size.height*0.05,
                             width: MediaQuery.of(context).size.height*0.05,
-                            child: new ClipOval(
-                              child: ds.data()['coverImage'] != null ?
-                              new Image.network(ds.data()['coverImage'], fit: BoxFit.cover)
-                              : new Container(),
-                          )),
+                            child: new Stack(
+                              children: [
+                                new Positioned(
+                                  top: 0.0,
+                                  left: 0.0,
+                                  right: 0.0,
+                                  bottom: 0.0,
+                                  child: new ClipOval(
+                                    child: ds.data()['coverImage'] != null ?
+                                    new Image.network(ds.data()['coverImage'], fit: BoxFit.cover)
+                                    : new Container())),
+                                _modificationInProgress == true
+                                ? new Positioned(
+                                  top: 0.0,
+                                  left: 0.0,
+                                  right: 0.0,
+                                  bottom: 0.0,
+                                  child: new CupertinoActivityIndicator(
+                                    animating: true,
+                                    radius: 10.0,
+                                  ))
+                                : new Container(),
+                              ],
+                            ),
+                          ),
                           title: new Text(ds.data()['artistUsername'] != null ?
                           ds.data()['artistUsername'] : '',
                           style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
@@ -745,25 +791,108 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                   new CupertinoActionSheetAction(
                                     child: new Text('Move to released'),
                                     onPressed: () {
-                                      print('pressed');
+                                      Navigator.pop(context);
+                                      showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) => 
+                                      new CupertinoAlertDialog(
+                                        title: new Text("Move this track to released ?",
+                                        style: new TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold),
+                                        ),
+                                        content: new Padding(
+                                          padding: EdgeInsets.only(top: 10.0),
+                                          child: new Text("Be careful, this track could be played by others users.",
+                                          style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.normal),
+                                        )),
+                                        actions: <Widget>[
+                                          new CupertinoDialogAction(
+                                            child: new Text("Move", style: new TextStyle(color: Colors.red, fontSize: 13.0, fontWeight: FontWeight.normal)),
+                                            onPressed: () {
+                                              moveToReleased(
+                                                ds.data()['timestamp'], 
+                                                ds.data()['title'], 
+                                                ds.data()['extension'], 
+                                                ds.data()['coverImage'],
+                                                ds.data()['fileMusicURL'] ,
+                                                ds.data()['fileMusicDuration'], 
+                                                ds.data()['style']);
+                                              Navigator.pop(context);
+                                              },
+                                          ),
+                                          new CupertinoDialogAction(
+                                            child: Text("No, thanks", style: new TextStyle(fontSize: 14.0, fontWeight: FontWeight.normal)),
+                                            onPressed: () {Navigator.pop(context);},
+                                          )
+                                        ],
+                                      )
+                                      );
                                     },
                                   ),
                                   new CupertinoActionSheetAction(
                                     child: new Text('Modify cover'),
-                                    onPressed: () {
-                                      print('pressed');
-                                    },
-                                  ),
-                                  new CupertinoActionSheetAction(
-                                    child: new Text('Modify title'),
-                                    onPressed: () {
-                                      print('pressed');
+                                    onPressed: () async {
+                                     var photoIOSPermission = await Permission.photos.status;
+                                     if(photoIOSPermission.isGranted) {
+                                       print('Accepté');
+                                       FilePickerResult resultImage  = await FilePicker.platform.pickFiles(type: FileType.image);
+                                       //final pickedFile = await picker.getImage(source: ImageSource.gallery);
+                                        if(resultImage != null) {
+                                          setState(() {
+                                            _image = File(resultImage.files.single.path);
+                                          });
+                                          modifyImageCover(_image, ds.data()['timestamp'], ds.data()['style']);
+                                        } else {
+                                           print('No image selected.');
+                                        }
+                                     }
+                                     if(photoIOSPermission.isUndetermined) {
+                                       await Permission.photos.request();
+                                       if(await Permission.photos.request().isGranted) {
+                                       //final pickedFile = await picker.getImage(source: ImageSource.gallery);
+                                       FilePickerResult resultImage  = await FilePicker.platform.pickFiles(type: FileType.image);
+                                        if(resultImage != null) {
+                                          setState(() {
+                                            _image = File(resultImage.files.single.path);
+                                          });
+                                          
+                                        } else {
+                                           print('No image selected.');
+                                        }
+                                       }
+                                       if(await Permission.photos.request().isDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                       if(await Permission.photos.request().isPermanentlyDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                     }
+                                     if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
+                                       PermissionDemandClass().iosDialogImage(context);
+                                     }
                                     },
                                   ),
                                   new CupertinoActionSheetAction(
                                     child: new Text('Download'),
-                                    onPressed: () {
-                                      print('pressed');
+                                    onPressed: () async {
+                                     var fileAccessPermission = await Permission.storage.status;
+                                     if(fileAccessPermission.isGranted) {
+                                       downloadMusic(ds.data()['fileMusicURL'], ds.data()['artistUsername'], ds.data()['title'],ds.data()['extension']);
+                                     }
+                                     if(fileAccessPermission.isUndetermined) {
+                                       await Permission.photos.request();
+                                       if(await Permission.photos.request().isGranted) {
+                                       downloadMusic(ds.data()['fileMusicURL'], ds.data()['artistUsername'], ds.data()['title'],ds.data()['extension']);
+                                       }
+                                       if(await Permission.photos.request().isDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                       if(await Permission.photos.request().isPermanentlyDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                     }
+                                     if(fileAccessPermission.isDenied || fileAccessPermission.isPermanentlyDenied) {
+                                       PermissionDemandClass().iosDialogImage(context);
+                                     }
                                     },
                                   ),
                                   new CupertinoActionSheetAction(
@@ -785,7 +914,13 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                         actions: <Widget>[
                                           new CupertinoDialogAction(
                                             child: new Text("Delete", style: new TextStyle(color: Colors.red, fontSize: 13.0, fontWeight: FontWeight.normal)),
-                                            onPressed: () {Navigator.pop(context);},
+                                            onPressed: () {
+                                              deleteUnreleasedTrack(
+                                                ds.data()['timestamp'], 
+                                                ds.data()['style'], 
+                                                ds.data()['fileMusicURL']);
+                                              Navigator.pop(context);
+                                              },
                                           ),
                                           new CupertinoDialogAction(
                                             child: Text("No, thanks", style: new TextStyle(fontSize: 14.0, fontWeight: FontWeight.normal)),
@@ -810,18 +945,238 @@ class UnreleasedTracksPageState extends State<UnreleasedTracksPage> {
                                 builder: (BuildContext context) => act);
                             },
                             ),
+                          )
+                          : new ListTile(
+                            title: new Center(
+                              child: new Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  new CupertinoActivityIndicator(
+                                    animating: true,
+                                  ),
+                                  new Text('Move to released in progress',
+                                    style: new TextStyle(color: Colors.grey, fontSize: 13.0, fontWeight: FontWeight.bold),
+                                  ),
+                                  new CupertinoActivityIndicator(
+                                    animating: true,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         );
                         }),
                         );
                         },
                         ),
+                        ),
+                     ],
+                  ),
+                ),
+              ),
+              _deleteInProgress == true
+              ? new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    new Container(
+                      decoration: new BoxDecoration(
+                        color: Colors.grey.withOpacity(0.4),
+                        borderRadius: new BorderRadius.circular(5.0),
+                      ),
+                      child: new Padding(
+                        padding: EdgeInsets.all(15.0),
+                        child: new CupertinoActivityIndicator(
+                          animating: true,
+                          radius: 15.0,
+                        ),
+                      ),
                     ),
+                  ],
+                ),
+              )
+              : new Container(),
+              _downloadInProgress == true
+              ? new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    new Container(
+                      height: MediaQuery.of(context).size.height*0.15,
+                      width: MediaQuery.of(context).size.height*0.15,
+                      decoration: new BoxDecoration(
+                        color: Colors.grey[900].withOpacity(1.0),
+                        borderRadius: new BorderRadius.circular(5.0),
+                      ),
+                        child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                          new Icon(Icons.download_rounded, size: 40),
+                          new Text(_trackDownloadingProgress != null ? (_trackDownloadingProgress*100).toStringAsFixed(0) + ' %' : '0 %',
+                          style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                          ),
+                          ],
+                        ),
+                    ),
+                  ],
+                ),
+              )
+              : new Container(),
             ],
           ),
-        ),
         ),
       ),
     );
   }
+
+
+  moveToReleased(String timeStampPrevious, String title, String extensionTrack, String coverImageURL, String fileMusicURL, int durationFileAudio, String styleMusic) async {
+    String _timeStampToReleased = DateTime.now().microsecondsSinceEpoch.toString();
+    setState(() {
+      _moveToReleased = true;
+    });
+    //Inject data in released area
+    FirebaseFirestore.instance
+      .collection('users')
+      .doc(widget.currentUser)
+      .collection('releasedTracks')
+      .doc(_timeStampToReleased+widget.currentUser)
+      .set({
+        'songLocked': false,
+        'title': title,
+        'extension': extensionTrack,
+        'artistProfilePhoto': widget.currentUserPhoto,
+        'artistUsername': widget.currentUserUsername,
+        'artistUID': widget.currentUser,
+        'timestamp': _timeStampToReleased,
+        'coverImage': coverImageURL,
+        'fileMusicURL': fileMusicURL,
+        'fileMusicDuration': durationFileAudio,
+        'style': styleMusic,
+      }).whenComplete(() {
+        FirebaseFirestore.instance
+          .collection(styleMusic)
+          .doc(_timeStampToReleased+widget.currentUser)
+          .set({
+            'songLocked': false,
+            'title': title,
+            'extension': extensionTrack,
+            'artistProfilePhoto': widget.currentUserPhoto,
+            'artistUsername': widget.currentUserUsername,
+            'artistUID': widget.currentUser,
+            'timestamp': _timeStampToReleased,
+            'coverImage': coverImageURL,
+            'fileMusicURL': fileMusicURL,
+            'fileMusicDuration': durationFileAudio,
+            'style': styleMusic,
+          }).whenComplete(() {
+            print('Cloud Firestore : track stored in Released area.');
+            FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.currentUser)
+              .collection('unreleasedTracks')
+              .doc(timeStampPrevious+widget.currentUser)
+              .delete().whenComplete(() {
+                print('Cloud Firestore : track deleted from unReleased area.');
+                setState(() {
+                  _moveToReleased = false;
+                });
+              });
+          });
+      });
+
+  }
+
+
+  modifyImageCover(File filePhoto, String timeStamp, String musicStyle) async {
+    Navigator.pop(context);
+    setState(() {
+      _modificationInProgress = true;
+    });
+    firebase_storage.Reference storageReference = firebase_storage.FirebaseStorage.instance
+      .ref()
+      .child('${widget.currentUser}/songs/$timeStamp/$timeStamp-image');
+      firebase_storage.UploadTask uploadTask = storageReference.putFile(filePhoto);
+      await uploadTask;
+      print('Firebase storage : Cover has been modified.');
+      storageReference.getDownloadURL().then((imageSongURL) {
+        FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.currentUser)
+          .collection('unreleasedTracks')
+          .doc(timeStamp+widget.currentUser)
+          .update({
+            'coverImage': imageSongURL,
+          }).whenComplete(() {
+            setState(() {
+              _modificationInProgress = false;
+            });
+            print('Cloud Firestore : Cover url has been modified.');
+          });
+      });
+  }
+
+  //DownloadMusic function
+  downloadMusic(String trackURL,String artistUsername, String title, String extensionFile) async {
+    Directory tempDir = await getApplicationDocumentsDirectory();
+    setState(() {
+      Navigator.pop(context);
+      _downloadInProgress = true;
+    });
+    File _trackFile = File('${tempDir.path}/$artistUsername-$title.$extensionFile');
+    firebase_storage.Reference storageRefenceTrack = firebase_storage.FirebaseStorage.instance
+      .refFromURL(trackURL);
+      firebase_storage.DownloadTask _downloadTask = storageRefenceTrack.writeToFile(_trackFile);
+      _downloadTask.snapshotEvents.listen((firebase_storage.TaskSnapshot snapshot) {
+        setState(() {
+          _trackDownloadingProgress = ((snapshot.bytesTransferred/snapshot.totalBytes)).toDouble();
+          print('Firebase storage download : $_trackDownloadingProgress');
+        });
+       });
+      await _downloadTask;
+      print('Firebase storage : file downloaded with success.');
+      setState(() {
+         _downloadInProgress = false;
+      });
+  }
+
+  deleteUnreleasedTrack(String timeStamp, String musicStyle, String musicURL) {
+    setState(() {
+      _deleteInProgress = true;
+    });
+    firebase_storage.Reference storageReferenceImage = firebase_storage.FirebaseStorage.instance
+      .ref()
+      .child('${widget.currentUser}/songs/$timeStamp/$timeStamp-image');
+      storageReferenceImage.delete().whenComplete(() {
+        print('Firebase storage : cover deleted.');
+        firebase_storage.Reference storageReferenceAudio = firebase_storage.FirebaseStorage.instance
+        .refFromURL(musicURL);
+        storageReferenceAudio.delete().whenComplete(() {
+          print('Firebase storage : track deleted.');
+          FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.currentUser)
+            .collection('unreleasedTracks')
+            .doc(timeStamp+widget.currentUser)
+            .delete().whenComplete(() {
+              print('Cloud Firestore : Metadas deleted.');
+              setState(() {
+                _deleteInProgress = false;
+              });
+            });
+        });
+
+      });
+  }
+
+
+
 }

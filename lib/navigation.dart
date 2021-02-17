@@ -73,13 +73,25 @@ class NavigationPageState extends State<NavigationPage> {
                 );
                 break;
               case 1:
-                return DiscoverPage();
+                return DiscoverPage(
+                  currentUser: widget.currentUser,
+                  currentUserPhoto: widget.currentUserPhoto,
+                  currentUserUsername: widget.currentUserUsername,
+                );
                 break;
               case 2:
-                return DiscussionsPage();
+                return DiscussionsPage(
+                  currentUser: widget.currentUser,
+                  currentUserPhoto: widget.currentUserPhoto,
+                  currentUserUsername: widget.currentUserUsername,
+                );
                 break;
               default:
-                return NotificationsPage();
+                return NotificationsPage(
+                  currentUser: widget.currentUser,
+                  currentUserProfilePhoto: widget.currentUserPhoto,
+                  currentUsername: widget.currentUserUsername,
+                );
                 break;
             }
       },

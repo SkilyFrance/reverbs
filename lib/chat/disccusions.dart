@@ -3,6 +3,7 @@ import 'package:SONOZ/DiscoverTab/profileDetails.dart';
 import 'package:SONOZ/permissionsHandler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,10 +18,10 @@ import 'chat.dart';
 class DiscussionsPage extends StatefulWidget {
 
   String currentUser;
+  String currentUserPhoto;
   String currentUserUsername;
-  String currentUserType;
 
-  DiscussionsPage({Key key, this.currentUser, this.currentUserUsername, this.currentUserType}) : super(key: key);
+  DiscussionsPage({Key key, this.currentUser, this.currentUserUsername, this.currentUserPhoto}) : super(key: key);
 
   @override
   DiscussionsPageState createState() => DiscussionsPageState();
@@ -119,41 +120,92 @@ class DiscussionsPageState extends State<DiscussionsPage> {
                                 ),
                                 new Container(
                                   height: MediaQuery.of(context).size.height*0.63,
-                                  child: new ListView.builder(
-                                    padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
-                                    shrinkWrap: true,
-                                    itemCount: 50,
-                                    scrollDirection: Axis.vertical,
-                                    controller: _listOfContactsController,
-                                    physics: new ScrollPhysics(),
-                                    itemBuilder: (BuildContext context, int item) {
+                                  child: new StreamBuilder(
+                                    stream: FirebaseFirestore.instance.collection('users').snapshots(),
+                                    builder: (BuildContext context, snapshot) {
+                                      if(snapshot.connectionState == ConnectionState.waiting) {
+                                      return new Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            new CupertinoActivityIndicator(radius: 6.0, animating: true),
+                                            new Padding(
+                                              padding: EdgeInsets.only(top: 30.0),
+                                            child: new Text('Fetching datas',
+                                            style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                            )),
+                                          ],
+                                        );
+                                      }
+                                      if(snapshot.hasError || !snapshot.hasData || snapshot.data.documents.isEmpty) {
+                                      return new Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            new Icon(Icons.error, size: 30.0, color: Colors.white),
+                                            new Padding(
+                                              padding: EdgeInsets.only(top: 30.0),
+                                            child: new Text('Check your network connection',
+                                            style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.bold),
+                                            )),
+                                          ],
+                                        );
+                                      }
                                       return new Container(
-                                        height: MediaQuery.of(context).size.height*0.10,
-                                        width: MediaQuery.of(context).size.width,
-                                        child: new ListTile(
-                                          onTap: () {
-                                            print('GoToConvers');
-                                          },
-                                          leading: new Container(
-                                          height: MediaQuery.of(context).size.height*0.04,
-                                          width: MediaQuery.of(context).size.height*0.04,
-                                          constraints: new BoxConstraints(
-                                            minHeight: 30.0,
-                                          ),
-                                          child: new ClipOval(child: new Image.asset('lib/assets/userPhoto.png', fit: BoxFit.cover),
-                                        )),
-                                        title: new Text('Festival project',
-                                        style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                        ),
-                                        trailing: new IconButton(
-                                          icon: new Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey), 
-                                          onPressed: (){
-
-                                          })
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                       child: new ListView.builder(
+                                         padding: EdgeInsets.only(top: 50.0, bottom: 50.0),
+                                         shrinkWrap: true,
+                                         itemCount: snapshot.data.documents.length,
+                                         scrollDirection: Axis.vertical,
+                                         controller: _listOfContactsController,
+                                         physics: new ScrollPhysics(),
+                                         itemBuilder: (BuildContext context, int index) {
+                                           DocumentSnapshot ds = snapshot.data.documents[index];
+                                           return new Container(
+                                             height: MediaQuery.of(context).size.height*0.10,
+                                             width: MediaQuery.of(context).size.width,
+                                             child: new ListTile(
+                                               onTap: () {
+                                                 Navigator.pop(context);
+                                                 Navigator.push(context, 
+                                                 new CupertinoPageRoute(
+                                                   builder: (context) => new ChatPage(
+                                                     heroTag: ds.data()['uid'],
+                                                     //CurrentUser datas
+                                                     currentUser: widget.currentUser,
+                                                     currentUserphoto: widget.currentUserPhoto,
+                                                     currentUsername: widget.currentUserUsername,
+                                                     //RecicpientUser datas
+                                                     recipientUserUID: ds.data()['uid'],
+                                                     recipientUserPhoto: ds.data()['profilePhoto'],
+                                                     recipientUserUsername: ds.data()['userName'],
+                                                     )));
+                                               },
+                                               leading: new Container(
+                                               height: MediaQuery.of(context).size.height*0.04,
+                                               width: MediaQuery.of(context).size.height*0.04,
+                                               constraints: new BoxConstraints(
+                                                 minHeight: 30.0,
+                                               ),
+                                               child: new ClipOval(
+                                                 child: ds.data()['profilePhoto'] != null
+                                                  ? new Image.network(ds.data()['profilePhoto'], fit: BoxFit.cover)
+                                                  : new Container(),
+                                             )),
+                                             title: new Text(ds.data()['userName'] != null
+                                             ? ds.data()['userName']
+                                             : ds.data()['userName'],
+                                             style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                             ),
+                                             trailing: new IconButton(
+                                               icon: new Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey), 
+                                               onPressed: (){
+        
+                                               })
+                                             ),
+                                           );
+                                         },
+                                       ),
+                                        );
+                                    }),
                                 ),
                              ],
                             ),
@@ -172,38 +224,141 @@ class DiscussionsPageState extends State<DiscussionsPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               new Container(
-                child: new ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: 2,
-                  scrollDirection: Axis.vertical,
-                  controller: _listDiscussionsController,
-                  physics: new NeverScrollableScrollPhysics(),
-                  itemBuilder: (BuildContext context, int item) {
-                    return new Container(
-                      height: MediaQuery.of(context).size.height*0.10,
-                      width: MediaQuery.of(context).size.width,
-                      child: new ListTile(
-                        onTap: () {
-                          Navigator.push(context, new CupertinoPageRoute(builder: (context) => new ChatPage(heroTag: item.toString())));
-                        },
-                        leading: new Container(
-                        height: MediaQuery.of(context).size.height*0.05,
-                        width: MediaQuery.of(context).size.height*0.05,
-                        child: new ClipOval(child: new Image.asset(item == 0 ? 'lib/assets/userPhoto.png' : 'lib/assets/user2.jpg', fit: BoxFit.cover),
+                child: new StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection('discussions').orderBy('lastTimestamp', descending: true).snapshots(),
+                  builder: (BuildContext context, snapshot) {
+                    if(snapshot.hasError) {
+                      return new Container(
+                        height: MediaQuery.of(context).size.height*0.60,
+                        width: MediaQuery.of(context).size.width,
+                        color: Colors.transparent,
+                        child: new Center(
+                        child: new Container(
+                          height: MediaQuery.of(context).size.height*0.30,
+                          width: MediaQuery.of(context).size.width,
+                          color: Colors.transparent,
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              new Icon(Icons.error, size: 30.0, color: Colors.white),
+                              new Padding(
+                              padding: EdgeInsets.only(top: 30.0),
+                              child: new Text('Check your network connection',
+                              style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.bold),
+                              )),
+                            ],
+                        ),
                       )),
-                      title: new Text(item == 0 ? 'Future house track' : 'Trap project',
-                      style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: new Text(item == 0 ? 'Yes, last version has been sent this morning ...' : 'We know that it is gonna be huge ahah, right...',
-                      style: new TextStyle(color: Colors.grey, fontSize: 12.0, fontWeight: FontWeight.normal),
-                      ),
-                      trailing: new Text('12:00',
-                      style: new TextStyle(color: Colors.grey, fontSize: 12.0, fontWeight: FontWeight.normal),
-                      ),
+                    );
+                    }
+                    if(!snapshot.hasData || snapshot.data.documents.isEmpty) {
+                      return new Container(
+                        height: MediaQuery.of(context).size.height*0.60,
+                        width: MediaQuery.of(context).size.width,
+                        color: Colors.transparent,
+                        child: new Center(
+                        child: new Container(
+                          height: MediaQuery.of(context).size.height*0.30,
+                          width: MediaQuery.of(context).size.width,
+                          color: Colors.transparent,
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              new Icon(Icons.more_horiz_rounded, size: 30.0, color: Colors.white),
+                              new Padding(
+                              padding: EdgeInsets.only(top: 30.0),
+                              child: new Text('No message received yet.',
+                              style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.bold),
+                              )),
+                            ],
+                        ),
+                      )),
+                    );
+                    }
+                    if(snapshot.connectionState == ConnectionState.waiting) {
+                      return new Container(
+                        height: MediaQuery.of(context).size.height*0.60,
+                        width: MediaQuery.of(context).size.width,
+                        color: Colors.transparent,
+                        child: new Center(
+                        child: new Container(
+                          height: MediaQuery.of(context).size.height*0.30,
+                          width: MediaQuery.of(context).size.width,
+                          color: Colors.transparent,
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              //new CupertinoActivityIndicator(radius: 15.0, animating: true),
+                            ],
+                          ),
+                          )),
+                    );  
+                    }
+                    return new Container(
+                      child: new ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: snapshot.data.documents.length,
+                        scrollDirection: Axis.vertical,
+                        controller: _listDiscussionsController,
+                        physics: new NeverScrollableScrollPhysics(),
+                        itemBuilder: (BuildContext context, int index) {
+                          DocumentSnapshot ds = snapshot.data.documents[index];
+                          return new Container(
+                            height: MediaQuery.of(context).size.height*0.10,
+                            width: MediaQuery.of(context).size.width,
+                            child: new ListTile(
+                              onTap: () {
+                                Navigator.push(
+                                  context, 
+                                  new CupertinoPageRoute(builder: (context) => new ChatPage(
+                                    heroTag: ds.data()['recipientUID'],
+                                    //CurrentUser
+                                    currentUser: widget.currentUser,
+                                    currentUserphoto: widget.currentUserPhoto,
+                                    currentUsername: widget.currentUserUsername,
+                                    //RecipientUserDatas
+                                    recipientUserUID: ds.data()['recipientUID'],
+                                    recipientUserPhoto: ds.data()['recipientUserPhoto'],
+                                    recipientUserUsername: ds.data()['recipientUsername'],
+                                    )));
+                              },
+                              leading: new Container(
+                              height: MediaQuery.of(context).size.height*0.05,
+                              width: MediaQuery.of(context).size.height*0.05,
+                              child: new ClipOval(
+                                child: ds.data()['recipientUserPhoto'] != null
+                                ? new Image.network(ds.data()['recipientUserPhoto'], fit: BoxFit.cover)
+                                : new Container(),
+                            )),
+                            title: new Text(ds.data()['recipientUsername'] != null
+                            ? ds.data()['recipientUsername']
+                            : 'Unknown',
+                            style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: new Text(ds.data()['lastMessageContent'] != null && ds.data()['typeOfContent'] == 'track'
+                            ? 'File audio'
+                            : ds.data()['lastMessageContent'] != null && ds.data()['typeOfContent'] == 'text'
+                            ? ds.data()['lastMessageContent']
+                            : '',
+                            overflow: TextOverflow.ellipsis,
+                            style: new TextStyle(color: Colors.grey, fontSize: 12.0, fontWeight: FontWeight.normal),
+                            ),
+                            trailing: ds.data()['lastTimestamp'] != null && DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inMinutes < 1
+                              ? new Text('few sec', style: new TextStyle(color: Colors.grey))
+                              : ds.data()['lastTimestamp'] != null && DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inMinutes < 60
+                              ? new Text(DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inMinutes.toString() + ' min', style: new TextStyle(color: Colors.grey))
+                              : ds.data()['lastTimestamp'] != null && DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inMinutes >= 60
+                              ? new Text(DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inHours.toString() + ' hours', style: new TextStyle(color: Colors.grey))
+                              : ds.data()['lastTimestamp'] != null && DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inHours >= 24
+                              ? new Text(DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(ds.data()['lastTimestamp'])).inDays.toString() + ' days', style: new TextStyle(color: Colors.grey))
+                              : '',
+                            ),
+                          );
+                        },
                       ),
                     );
-                  },
-                ),
+                  }
+                  ),
               ),
             ],
           ),

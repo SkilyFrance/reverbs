@@ -556,33 +556,33 @@ class ReleasedTracksPageState extends State<ReleasedTracksPage> {
                                                     'fileMusicURL': fileMusicUrl,
                                                     'fileMusicDuration': durationFileAudio,
                                                     'style': 
-                                                    musicStyleSelectedValue == 0 ? 'futureHouse' 
-                                                    : musicStyleSelectedValue == 1 ? 'progressiveHouse' 
-                                                    : musicStyleSelectedValue == 2 ? 'deepHouse' 
-                                                    : musicStyleSelectedValue == 3 ? 'acidHouse'
-                                                    : musicStyleSelectedValue == 4 ? 'chillHouse'
-                                                    : musicStyleSelectedValue == 5 ? 'trap'
-                                                    : musicStyleSelectedValue == 6 ? 'dubstep'
-                                                    : musicStyleSelectedValue == 7 ? 'dirtyDutch'
-                                                    : musicStyleSelectedValue == 8 ? 'techno'
-                                                    : musicStyleSelectedValue == 9 ? 'trance'
-                                                    : musicStyleSelectedValue == 10 ? 'hardstyle'
-                                                    : 'futureHouse',
+                                                    musicStyleSelectedValue == 0 ? 'MusicfutureHouse' 
+                                                    : musicStyleSelectedValue == 1 ? 'MusicprogressiveHouse' 
+                                                    : musicStyleSelectedValue == 2 ? 'MusicdeepHouse' 
+                                                    : musicStyleSelectedValue == 3 ? 'MusicacidHouse'
+                                                    : musicStyleSelectedValue == 4 ? 'MusicchillHouse'
+                                                    : musicStyleSelectedValue == 5 ? 'Musictrap'
+                                                    : musicStyleSelectedValue == 6 ? 'Musicdubstep'
+                                                    : musicStyleSelectedValue == 7 ? 'MusicdirtyDutch'
+                                                    : musicStyleSelectedValue == 8 ? 'Musictechno'
+                                                    : musicStyleSelectedValue == 9 ? 'Musictrance'
+                                                    : musicStyleSelectedValue == 10 ? 'Musichardstyle'
+                                                    : 'MusicfutureHouse',
                                                   }).whenComplete(() {
                                                     FirebaseFirestore.instance
                                                       .collection(                                                    
-                                                          musicStyleSelectedValue == 0 ? 'futureHouse' 
-                                                        : musicStyleSelectedValue == 1 ? 'progressiveHouse' 
-                                                        : musicStyleSelectedValue == 2 ? 'deepHouse' 
-                                                        : musicStyleSelectedValue == 3 ? 'acidHouse'
-                                                        : musicStyleSelectedValue == 4 ? 'chillHouse'
-                                                        : musicStyleSelectedValue == 5 ? 'trap'
-                                                        : musicStyleSelectedValue == 6 ? 'dubstep'
-                                                        : musicStyleSelectedValue == 7 ? 'dirtyDutch'
-                                                        : musicStyleSelectedValue == 8 ? 'techno'
-                                                        : musicStyleSelectedValue == 9 ? 'trance'
-                                                        : musicStyleSelectedValue == 10 ? 'hardstyle'
-                                                        : 'futureHouse'
+                                                          musicStyleSelectedValue == 0 ? 'MusicfutureHouse' 
+                                                        : musicStyleSelectedValue == 1 ? 'MusicprogressiveHouse' 
+                                                        : musicStyleSelectedValue == 2 ? 'MusicdeepHouse' 
+                                                        : musicStyleSelectedValue == 3 ? 'MusicacidHouse'
+                                                        : musicStyleSelectedValue == 4 ? 'MusicchillHouse'
+                                                        : musicStyleSelectedValue == 5 ? 'Musictrap'
+                                                        : musicStyleSelectedValue == 6 ? 'Musicdubstep'
+                                                        : musicStyleSelectedValue == 7 ? 'MusicdirtyDutch'
+                                                        : musicStyleSelectedValue == 8 ? 'Musictechno'
+                                                        : musicStyleSelectedValue == 9 ? 'Musictrance'
+                                                        : musicStyleSelectedValue == 10 ? 'Musichardstyle'
+                                                        : 'MusicfutureHouse'
                                                       ).doc(_timestampUpload+widget.currentUser)
                                                       .set({
                                                         'songLocked': false,
@@ -596,18 +596,18 @@ class ReleasedTracksPageState extends State<ReleasedTracksPage> {
                                                         'fileMusicURL': fileMusicUrl,
                                                         'fileMusicDuration': durationFileAudio,
                                                         'style': 
-                                                        musicStyleSelectedValue == 0 ? 'futureHouse' 
-                                                        : musicStyleSelectedValue == 1 ? 'progressiveHouse' 
-                                                        : musicStyleSelectedValue == 2 ? 'deepHouse' 
-                                                        : musicStyleSelectedValue == 3 ? 'acidHouse'
-                                                        : musicStyleSelectedValue == 4 ? 'chillHouse'
-                                                        : musicStyleSelectedValue == 5 ? 'trap'
-                                                        : musicStyleSelectedValue == 6 ? 'dubstep'
-                                                        : musicStyleSelectedValue == 7 ? 'dirtyDutch'
-                                                        : musicStyleSelectedValue == 8 ? 'techno'
-                                                        : musicStyleSelectedValue == 9 ? 'trance'
-                                                        : musicStyleSelectedValue == 10 ? 'hardstyle'
-                                                        : 'futureHouse',
+                                                        musicStyleSelectedValue == 0 ? 'MusicfutureHouse' 
+                                                        : musicStyleSelectedValue == 1 ? 'MusicprogressiveHouse' 
+                                                        : musicStyleSelectedValue == 2 ? 'MusicdeepHouse' 
+                                                        : musicStyleSelectedValue == 3 ? 'MusicacidHouse'
+                                                        : musicStyleSelectedValue == 4 ? 'MusicchillHouse'
+                                                        : musicStyleSelectedValue == 5 ? 'Musictrap'
+                                                        : musicStyleSelectedValue == 6 ? 'Musicdubstep'
+                                                        : musicStyleSelectedValue == 7 ? 'MusicdirtyDutch'
+                                                        : musicStyleSelectedValue == 8 ? 'Musictechno'
+                                                        : musicStyleSelectedValue == 9 ? 'Musictrance'
+                                                        : musicStyleSelectedValue == 10 ? 'Musichardstyle'
+                                                        : 'MusicfutureHouse',
                                                       }).whenComplete(() {
                                                         print('Cloud Firestore : Metadatas are stored.');
                                                         modalSetState((){

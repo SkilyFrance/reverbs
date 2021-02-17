@@ -1,15 +1,23 @@
-import 'dart:ui';
 
+import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 
 class ProjectPublicationPage extends StatefulWidget {
 
+  String currentUser;
+  String currentUserPhoto;
+  String currentUserUsername;
 
-
-  ProjectPublicationPage({Key key}) : super(key: key);
-
+  ProjectPublicationPage({
+    Key key,
+    this.currentUser,
+    this.currentUserPhoto,
+    this.currentUserUsername,
+    }) : super(key: key);
 
   @override
   ProjectPublicationPageState createState() => ProjectPublicationPageState();
@@ -22,12 +30,15 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
   TextEditingController _projectContextTextController = new TextEditingController();
   int tabTracksSelected = 0;
   String _trackChoosenToPost;
+  String _fileMusicURL;
+  String _fileCoverImage;
+  int _fileMusicDuration;
   int selectedStyleInt;
-
-
+  bool _publishingInProgress = false;
 
   @override
   void initState() {
+    print('currentUser : ' + widget.currentUser);
     _listMusicController = new ScrollController();
     _projectContextTextController = new TextEditingController();
     super.initState();
@@ -83,7 +94,7 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                 ),
                 new Container(
                   child: new Center(
-                    child: new Text("Explain what you need to create this new track.",
+                    child: new Text("Explain what you want to create in this new track.",
                     style: new TextStyle(color: Colors.grey[700], fontSize: 11.0, fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -211,14 +222,78 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                     })),
                     new Container(
                       height: MediaQuery.of(context).size.height*0.20,
-                      child: new ListView.builder(
+                      child: new FutureBuilder(
+                        future: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection(tabTracksSelected == 0 ? 'demoTracks' : tabTracksSelected == 1 ? 'unreleasedTracks' : 'releasedTracks').get(),
+                        builder: (BuildContext context, snapshot) {
+                          if(snapshot.connectionState == ConnectionState.waiting) {
+                           return new Container(
+                             color: Colors.transparent,
+                             child: new Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                //new Center(child: new Text('Fetching tracks', style: new TextStyle(color: Colors.grey, fontSize: 16.0, fontWeight: FontWeight.bold))),
+                                new Padding(
+                                  padding: EdgeInsets.only(top: 0.0),
+                                  child: new CupertinoActivityIndicator(
+                                    animating: true,
+                                    radius: 15.0,
+                                    ),
+                                  )]
+                                ),
+                              );
+                          }
+                          if(snapshot.hasError) {
+                           return new Container(
+                             color: Colors.grey[900].withOpacity(0.5),
+                             child: new Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                new Center(child: new Text('Check your network connection.', style: new TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold))),
+                                new Padding(
+                                  padding: EdgeInsets.only(top: 30.0),
+                                child: new Icon(Icons.network_check_outlined, color: Colors.grey, size: 40.0),
+                                ),
+                                  ],
+                                ),
+                              );
+                          }
+                          if(!snapshot.hasData) {
+                           return new Container(
+                             color: Colors.grey[900].withOpacity(0.5),
+                             child: new Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                new Center(child: new Text('No track here.', style: new TextStyle(color: Colors.white, fontSize: 17.0, fontWeight: FontWeight.bold))),
+                                new Center(child: new Text('Upload a track to storage tab', style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold))),
+                                new Center(child: new Text('before find it here.', style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                              );
+                          }
+                          if(snapshot.data.documents.isEmpty){
+                           return new Container(
+                             color: Colors.grey[900].withOpacity(0.5),
+                             child: new Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                new Center(child: new Text('No track here.', style: new TextStyle(color: Colors.white, fontSize: 17.0, fontWeight: FontWeight.bold))),
+                                new Center(child: new Text('Upload a track to storage tab', style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold))),
+                                new Center(child: new Text('before find it here.', style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                              );
+                          }
+                      return new ListView.builder(
                         padding: EdgeInsets.only(left: 20.0, right: 20.0),
                         controller: _listMusicController,
                         scrollDirection: Axis.horizontal,
                         physics: new ScrollPhysics(),
-                        itemCount: 10,
-                        itemBuilder: (BuildContext context, int item) {
-                          return new Row(
+                        itemCount: snapshot.data.documents.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          DocumentSnapshot ds = snapshot.data.documents[index];
+                          return StatefulBuilder(
+                            builder: (BuildContext context, setListViewState) {
+                            return new Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               new Container(
@@ -229,7 +304,9 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                                      new InkWell(
                                        onTap: () {
                                          setState(() {
-                                           _trackChoosenToPost = item.toString();
+                                           _fileMusicURL = ds.data()['fileMusicURL'];
+                                           _fileMusicDuration = ds.data()['fileMusicDuration'];
+                                           _fileCoverImage = ds.data()['CoverImage'];
                                          });
                                        },
                                      child: new Container(
@@ -248,10 +325,12 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                                             bottom: 0.0,
                                             child: new ClipRRect(
                                         borderRadius: new BorderRadius.circular(5.0),
-                                        child: new Image.asset('lib/assets/background.jpg', fit: BoxFit.cover),
+                                        child: ds.data()['coverImage'] != null
+                                        ? new Image.network(ds.data()['coverImage'], fit: BoxFit.cover)
+                                        : new Container(),
                                            ),
                                           ),
-                                          _trackChoosenToPost == item.toString()
+                                          _fileMusicURL == ds.data()['fileMusicURL']
                                           ? new Positioned(
                                             top: 0.0,
                                             left: 0.0,
@@ -275,7 +354,10 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                                       ),
                                      ),
                                           new Container(
-                                            child: new Text('Something about you',
+                                            child: new Text(
+                                              ds.data()['title'] != null
+                                              ? ds.data()['title'].toString()
+                                              : '',
                                             style: new TextStyle(color: Colors.grey[700],fontSize: 10.0, fontWeight: FontWeight.w500),
                                             ),
                                           ),
@@ -289,8 +371,12 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                                     ),
                             ],
                           );
+                            }
+                          );
                         }
-                      ),
+                      );
+                        }
+                        ),
                     ),
                     ],
                   ),
@@ -396,12 +482,136 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                 ),
                 new Container(
                   width: MediaQuery.of(context).size.width*0.70,
-                child: new CupertinoButton(
-                  onPressed: () {},
-                  color: Colors.purpleAccent,
-                  child: new Center(
-                    child: new Text('PUBLISH'),
+                child: _publishingInProgress == false
+                 ? new CupertinoButton(
+                  onPressed: () {
+                    if(_projectContextTextController.value.text.length > 5 
+                    && _fileMusicURL != null
+                    && tabTracksSelected != null) {
+                      setState(() {
+                        _publishingInProgress = true;
+                      });
+                      String _timestampUpload = DateTime.now().microsecondsSinceEpoch.toString();
+                      FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(widget.currentUser)
+                        .collection('projects')
+                        .doc(_timestampUpload+widget.currentUser)
+                        .set({
+                          'context': _projectContextTextController.value.text.toString(),
+                          'documentUID': _timestampUpload+widget.currentUser,
+                          'adminUID': widget.currentUser,
+                          'artistProfilePhoto': widget.currentUserPhoto,
+                          'artistUsername': widget.currentUserUsername,
+                          'artistUID': widget.currentUser,
+                          'timestamp': _timestampUpload,
+                          'fileMusicURL': _fileMusicURL,
+                          'coverImage' : _fileCoverImage,
+                          'fileMusicDuration': _fileMusicDuration,
+                          'style': 
+                          selectedStyleInt == 0 ? 'futureHouse' 
+                          : selectedStyleInt == 1 ? 'progressiveHouse' 
+                          : selectedStyleInt == 2 ? 'deepHouse' 
+                          : selectedStyleInt == 3 ? 'acidHouse'
+                          : selectedStyleInt == 4 ? 'chillHouse'
+                          : selectedStyleInt == 5 ? 'trap'
+                          : selectedStyleInt == 6 ? 'dubstep'
+                          : selectedStyleInt == 7 ? 'dirtyDutch'
+                          : selectedStyleInt == 8 ? 'techno'
+                          : selectedStyleInt == 9 ? 'trance'
+                          : selectedStyleInt == 10 ? 'hardstyle'
+                          : 'futureHouse',
+                        }).whenComplete(() {
+                          print('Cloud Firestore : Added to projets area CurrentUser');
+                          FirebaseFirestore.instance
+                            .collection(
+                          selectedStyleInt == 0 ? 'ProjectfutureHouse' 
+                          : selectedStyleInt == 1 ? 'ProjectprogressiveHouse' 
+                          : selectedStyleInt == 2 ? 'ProjectdeepHouse' 
+                          : selectedStyleInt == 3 ? 'ProjectacidHouse'
+                          : selectedStyleInt == 4 ? 'ProjectchillHouse'
+                          : selectedStyleInt == 5 ? 'Projecttrap'
+                          : selectedStyleInt == 6 ? 'Projectdubstep'
+                          : selectedStyleInt == 7 ? 'ProjectdirtyDutch'
+                          : selectedStyleInt == 8 ? 'Projecttechno'
+                          : selectedStyleInt == 9 ? 'Projecttrance'
+                          : selectedStyleInt == 10 ? 'Projecthardstyle'
+                          : 'ProjectfutureHouse',
+                          ).doc(_timestampUpload+widget.currentUser)
+                          .set({
+                          'submissions':{
+                            'OOOOOOOOO': '0000000',
+                          },
+                          'context': _projectContextTextController.value.text.toString(),
+                          'documentUID': _timestampUpload+widget.currentUser,
+                          'adminUID': widget.currentUser,
+                          'artistProfilePhoto': widget.currentUserPhoto,
+                          'artistUsername': widget.currentUserUsername,
+                          'artistUID': widget.currentUser,
+                          'timestamp': _timestampUpload,
+                          'fileMusicURL': _fileMusicURL,
+                          'coverImage' : _fileCoverImage,
+                          'fileMusicDuration': _fileMusicDuration,
+                          'style':
+                          selectedStyleInt == 0 ? 'futureHouse' 
+                          : selectedStyleInt == 1 ? 'progressiveHouse' 
+                          : selectedStyleInt == 2 ? 'deepHouse' 
+                          : selectedStyleInt == 3 ? 'acidHouse'
+                          : selectedStyleInt == 4 ? 'chillHouse'
+                          : selectedStyleInt == 5 ? 'trap'
+                          : selectedStyleInt == 6 ? 'dubstep'
+                          : selectedStyleInt == 7 ? 'dirtyDutch'
+                          : selectedStyleInt == 8 ? 'techno'
+                          : selectedStyleInt == 9 ? 'trance'
+                          : selectedStyleInt == 10 ? 'hardstyle'
+                          : 'futureHouse',
+                          }).whenComplete(() {
+                            print('Cloud Firestore : Added to discover project tab');
+                            _projectContextTextController.clear();
+                            setState(() {
+                              _publishingInProgress = false;
+                            });
+                            Navigator.pop(context);
+                          });
+                        });
+                    }
+                  },
+                  color: 
+                  _projectContextTextController.value.text.length > 5 
+                    && _fileMusicURL != null
+                    && tabTracksSelected != null
+                    ? Colors.purpleAccent
+                    : Colors.purpleAccent.withOpacity(0.2),
+                    child: new Center(
+                    child: new Text('PUBLISH',
+                    style: new TextStyle(
+                      color:
+                      _projectContextTextController.value.text.length > 5 
+                    && _fileMusicURL != null
+                    && tabTracksSelected != null
+                    ? Colors.white
+                    : Colors.grey,
+                      ),
+                    ),
                   ),
+                  )
+                  : new Container(
+                    child: new Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        new CupertinoActivityIndicator(
+                          radius: 8.0,
+                          animating: true,
+                        ),
+                        new Text('Publication in progress',
+                        style: new TextStyle(color: Colors.purpleAccent, fontSize: 16.0, fontWeight: FontWeight.bold),
+                        ),
+                        new CupertinoActivityIndicator(
+                          radius: 8.0,
+                          animating: true,
+                        ),
+                      ],
+                    )
                   ),
                 ),
               ],

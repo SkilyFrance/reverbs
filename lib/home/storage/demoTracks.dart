@@ -40,6 +40,7 @@ class DemoTracksPageState extends State<DemoTracksPage> {
   TextEditingController _titleTextEditingController = new TextEditingController();
 
   //Variables for cupertinoActionSheet //
+  bool _moveToUnreleased = false;
   bool _modificationInProgress = false;
   bool _deleteInProgress = false;
   bool _downloadInProgress = false;
@@ -561,18 +562,18 @@ class DemoTracksPageState extends State<DemoTracksPage> {
                                                     'fileMusicURL': fileMusicUrl,
                                                     'fileMusicDuration': durationFileAudio,
                                                     'style': 
-                                                    musicStyleSelectedValue == 0 ? 'futureHouse' 
-                                                    : musicStyleSelectedValue == 1 ? 'progressiveHouse' 
-                                                    : musicStyleSelectedValue == 2 ? 'deepHouse' 
-                                                    : musicStyleSelectedValue == 3 ? 'acidHouse'
-                                                    : musicStyleSelectedValue == 4 ? 'chillHouse'
-                                                    : musicStyleSelectedValue == 5 ? 'trap'
-                                                    : musicStyleSelectedValue == 6 ? 'dubstep'
-                                                    : musicStyleSelectedValue == 7 ? 'dirtyDutch'
-                                                    : musicStyleSelectedValue == 8 ? 'techno'
-                                                    : musicStyleSelectedValue == 9 ? 'trance'
-                                                    : musicStyleSelectedValue == 10 ? 'hardstyle'
-                                                    : 'futureHouse',
+                                                    musicStyleSelectedValue == 0 ? 'MusicfutureHouse' 
+                                                    : musicStyleSelectedValue == 1 ? 'MusicprogressiveHouse' 
+                                                    : musicStyleSelectedValue == 2 ? 'MusicdeepHouse' 
+                                                    : musicStyleSelectedValue == 3 ? 'MusicacidHouse'
+                                                    : musicStyleSelectedValue == 4 ? 'MusicchillHouse'
+                                                    : musicStyleSelectedValue == 5 ? 'Musictrap'
+                                                    : musicStyleSelectedValue == 6 ? 'Musicdubstep'
+                                                    : musicStyleSelectedValue == 7 ? 'MusicdirtyDutch'
+                                                    : musicStyleSelectedValue == 8 ? 'Musictechno'
+                                                    : musicStyleSelectedValue == 9 ? 'Musictrance'
+                                                    : musicStyleSelectedValue == 10 ? 'Musichardstyle'
+                                                    : 'MusicfutureHouse',
                                                   }).whenComplete(() {
                                                     print('Cloud Firestore : Metadatas are stored.');
                                                     modalSetState((){
@@ -613,6 +614,14 @@ class DemoTracksPageState extends State<DemoTracksPage> {
           ];
         }, 
         body: new Container(
+          child: new Stack(
+            children: [
+              new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new Container(
           child: new SingleChildScrollView(
           child: new Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -719,15 +728,36 @@ class DemoTracksPageState extends State<DemoTracksPage> {
                         return new Container(
                           height: MediaQuery.of(context).size.height*0.10,
                           width: MediaQuery.of(context).size.width,
-                          child: new ListTile(
+                          child: _moveToUnreleased == false
+                          ? new ListTile(
                             leading: new Container(
                             height: MediaQuery.of(context).size.height*0.05,
                             width: MediaQuery.of(context).size.height*0.05,
-                            child: new ClipOval(
-                              child: ds.data()['coverImage'] != null ?
-                              new Image.network(ds.data()['coverImage'], fit: BoxFit.cover)
-                              : new Container(),
-                          )),
+                            child: new Stack(
+                              children: [
+                                new Positioned(
+                                  top: 0.0,
+                                  left: 0.0,
+                                  right: 0.0,
+                                  bottom: 0.0,
+                                  child: new ClipOval(
+                                    child: ds.data()['coverImage'] != null ?
+                                    new Image.network(ds.data()['coverImage'], fit: BoxFit.cover)
+                                    : new Container())),
+                                _modificationInProgress == true
+                                ? new Positioned(
+                                  top: 0.0,
+                                  left: 0.0,
+                                  right: 0.0,
+                                  bottom: 0.0,
+                                  child: new CupertinoActivityIndicator(
+                                    animating: true,
+                                    radius: 10.0,
+                                  ))
+                                : new Container(),
+                              ],
+                            ),
+                          ),
                           title: new Text(ds.data()['artistUsername'] != null ?
                           ds.data()['artistUsername'] : '',
                           style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
@@ -751,27 +781,110 @@ class DemoTracksPageState extends State<DemoTracksPage> {
                                 ),
                                 actions: <Widget>[
                                   new CupertinoActionSheetAction(
-                                    child: new Text('Move to released'),
+                                    child: new Text('Move to Unreleased'),
                                     onPressed: () {
-                                      print('pressed');
+                                      Navigator.pop(context);
+                                      showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) => 
+                                      new CupertinoAlertDialog(
+                                        title: new Text("Move this track to Unreleased ?",
+                                        style: new TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold),
+                                        ),
+                                        content: new Padding(
+                                          padding: EdgeInsets.only(top: 10.0),
+                                          child: new Text("Be careful, this track could not be played by others users.",
+                                          style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.normal),
+                                        )),
+                                        actions: <Widget>[
+                                          new CupertinoDialogAction(
+                                            child: new Text("Move", style: new TextStyle(color: Colors.red, fontSize: 13.0, fontWeight: FontWeight.normal)),
+                                            onPressed: () {
+                                              moveToUnreleased(
+                                                ds.data()['timestamp'], 
+                                                ds.data()['title'], 
+                                                ds.data()['extension'], 
+                                                ds.data()['coverImage'],
+                                                ds.data()['fileMusicURL'] ,
+                                                ds.data()['fileMusicDuration'], 
+                                                ds.data()['style']);
+                                              Navigator.pop(context);
+                                              },
+                                          ),
+                                          new CupertinoDialogAction(
+                                            child: Text("No, thanks", style: new TextStyle(fontSize: 14.0, fontWeight: FontWeight.normal)),
+                                            onPressed: () {Navigator.pop(context);},
+                                          )
+                                        ],
+                                      )
+                                      );
                                     },
                                   ),
                                   new CupertinoActionSheetAction(
                                     child: new Text('Modify cover'),
-                                    onPressed: () {
-                                      print('pressed');
-                                    },
-                                  ),
-                                  new CupertinoActionSheetAction(
-                                    child: new Text('Modify title'),
-                                    onPressed: () {
-                                      print('pressed');
+                                    onPressed: () async {
+                                     var photoIOSPermission = await Permission.photos.status;
+                                     if(photoIOSPermission.isGranted) {
+                                       print('Accepté');
+                                       FilePickerResult resultImage  = await FilePicker.platform.pickFiles(type: FileType.image);
+                                       //final pickedFile = await picker.getImage(source: ImageSource.gallery);
+                                        if(resultImage != null) {
+                                          setState(() {
+                                            _image = File(resultImage.files.single.path);
+                                          });
+                                          modifyImageCover(_image, ds.data()['timestamp'], ds.data()['style']);
+                                        } else {
+                                           print('No image selected.');
+                                        }
+                                     }
+                                     if(photoIOSPermission.isUndetermined) {
+                                       await Permission.photos.request();
+                                       if(await Permission.photos.request().isGranted) {
+                                       //final pickedFile = await picker.getImage(source: ImageSource.gallery);
+                                       FilePickerResult resultImage  = await FilePicker.platform.pickFiles(type: FileType.image);
+                                        if(resultImage != null) {
+                                          setState(() {
+                                            _image = File(resultImage.files.single.path);
+                                          });
+                                          
+                                        } else {
+                                           print('No image selected.');
+                                        }
+                                       }
+                                       if(await Permission.photos.request().isDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                       if(await Permission.photos.request().isPermanentlyDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                     }
+                                     if(photoIOSPermission.isDenied || photoIOSPermission.isPermanentlyDenied) {
+                                       PermissionDemandClass().iosDialogImage(context);
+                                     }
                                     },
                                   ),
                                   new CupertinoActionSheetAction(
                                     child: new Text('Download'),
-                                    onPressed: () {
-                                      print('pressed');
+                                    onPressed: () async {
+                                     var fileAccessPermission = await Permission.storage.status;
+                                     if(fileAccessPermission.isGranted) {
+                                       downloadMusic(ds.data()['fileMusicURL'], ds.data()['artistUsername'], ds.data()['title'],ds.data()['extension']);
+                                     }
+                                     if(fileAccessPermission.isUndetermined) {
+                                       await Permission.photos.request();
+                                       if(await Permission.photos.request().isGranted) {
+                                       downloadMusic(ds.data()['fileMusicURL'], ds.data()['artistUsername'], ds.data()['title'],ds.data()['extension']);
+                                       }
+                                       if(await Permission.photos.request().isDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                       if(await Permission.photos.request().isPermanentlyDenied) {
+                                         PermissionDemandClass().iosDialogImage(context);
+                                       }
+                                     }
+                                     if(fileAccessPermission.isDenied || fileAccessPermission.isPermanentlyDenied) {
+                                       PermissionDemandClass().iosDialogImage(context);
+                                     }
                                     },
                                   ),
                                   new CupertinoActionSheetAction(
@@ -793,7 +906,10 @@ class DemoTracksPageState extends State<DemoTracksPage> {
                                         actions: <Widget>[
                                           new CupertinoDialogAction(
                                             child: new Text("Delete", style: new TextStyle(color: Colors.red, fontSize: 13.0, fontWeight: FontWeight.normal)),
-                                            onPressed: () {Navigator.pop(context);},
+                                            onPressed: () {
+                                              deleteDemoTrack(ds.data()['timestamp'], ds.data()['style'], ds.data()['fileMusicURL']);
+                                              Navigator.pop(context);
+                                              },
                                           ),
                                           new CupertinoDialogAction(
                                             child: Text("No, thanks", style: new TextStyle(fontSize: 14.0, fontWeight: FontWeight.normal)),
@@ -818,6 +934,24 @@ class DemoTracksPageState extends State<DemoTracksPage> {
                                 builder: (BuildContext context) => act);
                             },
                             ),
+                          )
+                          : new ListTile(
+                            title: new Center(
+                              child: new Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  new CupertinoActivityIndicator(
+                                    animating: true,
+                                  ),
+                                  new Text('Move to Unreleased in progress',
+                                    style: new TextStyle(color: Colors.grey, fontSize: 13.0, fontWeight: FontWeight.bold),
+                                  ),
+                                  new CupertinoActivityIndicator(
+                                    animating: true,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         );
                         }),
@@ -828,9 +962,110 @@ class DemoTracksPageState extends State<DemoTracksPage> {
             ],
           ),
         ),
+                ),
+              ),
+              _deleteInProgress == true
+              ? new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    new Container(
+                      decoration: new BoxDecoration(
+                        color: Colors.grey.withOpacity(0.4),
+                        borderRadius: new BorderRadius.circular(5.0),
+                      ),
+                      child: new Padding(
+                        padding: EdgeInsets.all(15.0),
+                        child: new CupertinoActivityIndicator(
+                          animating: true,
+                          radius: 15.0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              : new Container(),
+              _downloadInProgress == true
+              ? new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                bottom: 0.0,
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    new Container(
+                      height: MediaQuery.of(context).size.height*0.15,
+                      width: MediaQuery.of(context).size.height*0.15,
+                      decoration: new BoxDecoration(
+                        color: Colors.grey[900].withOpacity(1.0),
+                        borderRadius: new BorderRadius.circular(5.0),
+                      ),
+                        child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                          new Icon(Icons.download_rounded, size: 40),
+                          new Text(_trackDownloadingProgress != null ? (_trackDownloadingProgress*100).toStringAsFixed(0) + ' %' : '0 %',
+                          style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                          ),
+                          ],
+                        ),
+                    ),
+                  ],
+                ),
+              )
+              : new Container(),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+
+  moveToUnreleased(String timeStampPrevious, String title, String extensionTrack, String coverImageURL, String fileMusicURL, int durationFileAudio, String styleMusic) async {
+    String _timeStampToUnreleased = DateTime.now().microsecondsSinceEpoch.toString();
+    setState(() {
+      _moveToUnreleased = true;
+    });
+    //Inject data in Unreleased area
+    FirebaseFirestore.instance
+      .collection('users')
+      .doc(widget.currentUser)
+      .collection('unreleasedTracks')
+      .doc(_timeStampToUnreleased+widget.currentUser)
+      .set({
+        'songLocked': false,
+        'title': title,
+        'extension': extensionTrack,
+        'artistProfilePhoto': widget.currentUserPhoto,
+        'artistUsername': widget.currentUserUsername,
+        'artistUID': widget.currentUser,
+        'timestamp': _timeStampToUnreleased,
+        'coverImage': coverImageURL,
+        'fileMusicURL': fileMusicURL,
+        'fileMusicDuration': durationFileAudio,
+        'style': styleMusic,
+      }).whenComplete(() {
+        print('Cloud Firestore : Metadatas are stored.');
+        FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.currentUser)
+          .collection('demoTracks')
+          .doc(timeStampPrevious+widget.currentUser)
+          .delete().whenComplete(() {
+            print('Cloud Firestore : track deleted from demo area.');
+            setState(() {
+              _moveToUnreleased = false;
+            });
+          });
+      });
+
   }
 
   modifyImageCover(File filePhoto, String timeStamp, String musicStyle) async {
@@ -913,8 +1148,5 @@ class DemoTracksPageState extends State<DemoTracksPage> {
           });
       });
   }
-
-
-
 
 }

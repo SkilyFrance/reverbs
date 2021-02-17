@@ -1,13 +1,16 @@
+import 'package:SONOZ/Discover/projectPublication.dart';
 import 'package:SONOZ/home/myprofile.dart';
 import 'package:SONOZ/home/myprojects/fileshared.dart';
 import 'package:SONOZ/home/myprojects/projectsSettings.dart';
 import 'package:SONOZ/home/storage/demoTracks.dart';
 import 'package:SONOZ/home/storage/releasedTracks.dart';
 import 'package:SONOZ/home/storage/unreleasedTracks.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'myprojects/contributors.dart';
+import 'myprojects/projectInProgress.dart';
 
 class HomePage extends StatefulWidget {
 
@@ -88,7 +91,7 @@ class HomePageState extends State<HomePage> {
                       color: Colors.transparent,
                     ),
                     new Container(
-                      child: new Text('My projects : 3',
+                      child: new Text('My projects',
                       style: new TextStyle(color: Colors.grey, fontSize: 20.0, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -103,20 +106,149 @@ class HomePageState extends State<HomePage> {
               ),
               //Divider
               new Container(
-                height: MediaQuery.of(context).size.height*0.32,
+                height: MediaQuery.of(context).size.height*0.28,
                 constraints: new BoxConstraints(
                   minHeight: 280.0,
                 ),
-                child: new PageView.builder(
-                  physics: new ScrollPhysics(),
-                  controller: _projectsPageViewController,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (BuildContext context, int item) {
+                child: new StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection('projects').snapshots(),
+                  builder: (BuildContext context, snapshot) {
+                    if(snapshot.connectionState == ConnectionState.waiting) {
+                      return new Container(
+                        child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            new CupertinoActivityIndicator(radius: 7.0, animating: true),
+                            new Text('Fetching datas ...',
+                            style: new TextStyle(color: Colors.grey, fontSize: 15.0, fontWeight: FontWeight.bold),
+                            )
+                          ],
+                        ),
+                      );
+                    }
+                    if(snapshot.hasError) {
+                      return new Container(
+                          height: MediaQuery.of(context).size.height*0.10,
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              new Icon(Icons.wifi, size: 30.0, color: Colors.grey),
+                              new Text('An error occured.',
+                              style: new TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    if(!snapshot.hasData) {
                     return new Padding(
                       padding: EdgeInsets.only(left: 20.0, right: 20.0),
                       child: new Container(
-                        height: MediaQuery.of(context).size.height*0.30,
+                        height: MediaQuery.of(context).size.height*0.28,
+                        width: MediaQuery.of(context).size.width*0.90,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey[900].withOpacity(0.5),
+                          borderRadius: new BorderRadius.circular(10.0),
+                        ),
+                        child: new Stack(
+                          children: [
+                        new Positioned(
+                        top: 0.0,
+                        left: 0.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        child: new Container(
+                          decoration: new BoxDecoration(
+                            borderRadius: new BorderRadius.circular(10.0),
+                            color: Colors.black.withOpacity(0.9),
+                          ),
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              new Text('Your project management tool',
+                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                              ),
+                              new IconButton(
+                                icon: new Icon(Icons.add_box_rounded, size: 40.0, color: Colors.white), 
+                                onPressed: () {
+                                  Navigator.push(context, new CupertinoPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => new ProjectPublicationPage(
+                                      currentUser: widget.currentUser,
+                                      currentUserPhoto: widget.currentUserPhoto,
+                                      currentUserUsername: widget.currentUserUsername,
+                                    )));
+                                }),
+                              new Text('Add your first project.',
+                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            );
+            }
+
+                    if(snapshot.data.documents.isEmpty) {
+                    return new Padding(
+                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                      child: new Container(
+                        height: MediaQuery.of(context).size.height*0.28,
+                        width: MediaQuery.of(context).size.width*0.90,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey[900].withOpacity(0.5),
+                          borderRadius: new BorderRadius.circular(10.0),
+                        ),
+                        child: new Stack(
+                          children: [
+                        new Positioned(
+                        top: 0.0,
+                        left: 0.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        child: new Container(
+                          decoration: new BoxDecoration(
+                            borderRadius: new BorderRadius.circular(10.0),
+                            color: Colors.black.withOpacity(0.9),
+                          ),
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              new Text('Your project management tool',
+                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                              ),
+                              new IconButton(
+                                icon: new Icon(Icons.add_box_rounded, size: 40.0, color: Colors.white), 
+                                onPressed: () {
+                                  Navigator.push(context, new CupertinoPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => new ProjectPublicationPage(
+                                      currentUser: widget.currentUser,
+                                      currentUserPhoto: widget.currentUserPhoto,
+                                      currentUserUsername: widget.currentUserUsername,
+                                    )));
+                                }),
+                              new Text('Add your first project.',
+                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            );
+             }
+
+
+                    return new Padding(
+                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                      child: new Container(
+                        height: MediaQuery.of(context).size.height*0.28,
                         width: MediaQuery.of(context).size.width*0.90,
                         decoration: new BoxDecoration(
                           color: Colors.grey[900].withOpacity(0.5),
@@ -129,26 +261,64 @@ class HomePageState extends State<HomePage> {
                               height: MediaQuery.of(context).size.height*0.07,
                               width: MediaQuery.of(context).size.width*0.90,
                               color: Colors.transparent,
-                              child: new Center(child: new Text('My awesome first project',
+                              child: new Center(child: new Text('Project in progress',
                               style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
                               ),
                               ),
                             ),
                             new Container(
-                              height: MediaQuery.of(context).size.height*0.22,
+                              height: MediaQuery.of(context).size.height*0.20,
                               width: MediaQuery.of(context).size.width*0.90,
                               color: Colors.transparent,
                               child: new Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  new Container(
+                                  new InkWell(
+                                    onTap: () {
+                                      Navigator.push(context, new CupertinoPageRoute(
+                                        builder: (context) => new ProjectInProgressPage(
+                                          currentUser: widget.currentUser,
+                                          currentUserPhoto: widget.currentUserPhoto,
+                                          currentUserUsername: widget.currentUserUsername,
+                                          lengthOfSnapshot: snapshot.data.documents.length,
+                                          snapshotFromHome: snapshot,
+                                      )));
+                                    },
+                                    splashColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                  child: new Container(
+                                    height: MediaQuery.of(context).size.height*0.15,
+                                    width: MediaQuery.of(context).size.height*0.15,
+                                    decoration: new BoxDecoration(
+                                      color: Colors.transparent,
+                                      shape: BoxShape.circle,
+                                      border: new Border.all(
+                                        width: 5.0,
+                                        color: Colors.purpleAccent,
+                                      ),
+                                    ),
+                                    child: new Center(
+                                      child: new Text(snapshot.data.documents.length.toString(),
+                                      style: new TextStyle(color: Colors.white, fontSize: 40.0, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  ),
+                                  /*new Container(
                                     height: MediaQuery.of(context).size.height*0.07,
                                     width: MediaQuery.of(context).size.width*0.90,
                                     color: Colors.transparent,
-                                    // CONTRIBUTORS LISTILE //
+                                    // Project in progress LISTILE //
                                     child: new ListTile(
                                       onTap: () {
-                                        Navigator.push(context, new CupertinoPageRoute(builder: (context) => new ContributorsPage()));
+                                        Navigator.push(context, new CupertinoPageRoute(
+                                          builder: (context) => new ProjectInProgressPage(
+                                            currentUser: widget.currentUser,
+                                            currentUserPhoto: widget.currentUserPhoto,
+                                            currentUserUsername: widget.currentUserUsername,
+                                            lengthOfSnapshot: snapshot.data.documents.length,
+                                            snapshotFromHome: snapshot,
+                                        )));
                                       },
                                       leading: new Container(
                                         height: MediaQuery.of(context).size.height*0.045,
@@ -158,12 +328,15 @@ class HomePageState extends State<HomePage> {
                                           borderRadius: new BorderRadius.circular(5.0),
                                         ),
                                         child: new Center(
-                                          child: new Icon(Icons.people_alt_rounded, color: Colors.white, size: 20.0),
+                                          child: new Icon(Icons.lightbulb, color: Colors.white, size: 20.0),
                                         ),
                                       ),
-                                      title: new Text('Contributors', style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                      title: new Text('Projects in progress', style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                       ),
-                                      trailing: new Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey),
+                                      trailing: new Text(
+                                        snapshot.data.documents.length.toString(),
+                                        style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                   ),
                                   new Padding(
@@ -176,7 +349,7 @@ class HomePageState extends State<HomePage> {
                                     // FILE LISTILE //
                                     child: new ListTile(
                                       onTap: () {
-                                        Navigator.push(context, new CupertinoPageRoute(builder: (context) => new FileSharedPage()));
+                                        //Navigator.push(context, new CupertinoPageRoute(builder: (context) => new FileSharedPage()));
                                       },
                                       leading: new Container(
                                         height: MediaQuery.of(context).size.height*0.045,
@@ -204,7 +377,11 @@ class HomePageState extends State<HomePage> {
                                     // FILE LISTILE //
                                     child: new ListTile(
                                       onTap: () {
-                                        Navigator.push(context, new CupertinoPageRoute(builder: (context) => new ProjectSettingsPage()));
+                                        Navigator.push(
+                                          context, 
+                                          new CupertinoPageRoute(builder: (context) => new ProjectSettingsPage(
+  
+                                        )));
                                       },
                                       leading: new Container(
                                         height: MediaQuery.of(context).size.height*0.045,
@@ -220,8 +397,8 @@ class HomePageState extends State<HomePage> {
                                       title: new Text('Settings', style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                       ),
                                       trailing: new Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey),
-                                    ),
-                                  ),
+                                    )
+                                  ),*/
                                 ],
                               ),
                             ),
@@ -229,7 +406,9 @@ class HomePageState extends State<HomePage> {
                         ),
                       ),
                     );
-                  }),
+    
+          },
+        ),
               ),
               //Divider
               new Container(
