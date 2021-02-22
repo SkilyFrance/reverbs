@@ -15,7 +15,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 class ProfileCreationProcessPage extends StatefulWidget {
 
   String currentUser;
-  String currentUserEmail; 
+  String currentUserEmail;
 
   ProfileCreationProcessPage({Key key,this.currentUser, this.currentUserEmail}) : super(key: key);
 
@@ -27,10 +27,15 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
 
   // TextEditingController //
   TextEditingController _userNameEditingController = new TextEditingController();
+  TextEditingController _sponsorUsernameEditingController = new TextEditingController();
   PageController _profileCreationController = new PageController(initialPage: 0, viewportFraction: 1);
 
   //CurrentUserVariables//
   String currentUsername;
+  //
+  String _currentSponsorUsername;
+  String currentSponsorUID;
+  bool _sponsorVerified = false;
 
   
   //ImagePicker variables
@@ -112,6 +117,166 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
              controller: _profileCreationController,
              physics: new NeverScrollableScrollPhysics(),
             children: [
+              //Sponsor by others users
+           new Container(
+             height: MediaQuery.of(context).size.height*0.40,
+             color: Colors.transparent,
+               child: new Column(
+                 mainAxisAlignment: MainAxisAlignment.start,
+                 children: [
+                  new Container(
+                    height: MediaQuery.of(context).size.height*0.40,
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.transparent,
+                    child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        new Container(
+                          height: MediaQuery.of(context).size.height*0.05,
+                          width: MediaQuery.of(context).size.width,
+                          color: Colors.transparent,
+                          child: new Center(
+                            child: new Text(
+                              _sponsorVerified == true
+                              && _currentSponsorUsername != null
+                              ? _currentSponsorUsername + ' found.'
+                              : 'Invited by a producer friend ?',
+                            style: new TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+
+                      _sponsorVerified == true
+                      ? new Icon(Icons.check, color: Colors.deepPurpleAccent, size: 60.0)
+                      : new Container(
+                        height: MediaQuery.of(context).size.height*0.07,
+                        width: MediaQuery.of(context).size.width*0.75,
+                        decoration: new BoxDecoration(
+                          borderRadius: new BorderRadius.circular(10.0),
+                          color: Colors.grey[900]
+                        ),
+                        child: new Center(
+                          child: new TextField(
+                            style: new TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold),
+                            controller: _sponsorUsernameEditingController,
+                            keyboardType: TextInputType.text,
+                            textCapitalization: TextCapitalization.sentences,
+                            keyboardAppearance: Brightness.dark,
+                            minLines: 1,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            cursorColor: Colors.lightBlue,
+                            decoration: new InputDecoration(
+                              hintText: 'Enter code he sent to you',
+                              hintStyle: new TextStyle(color: Colors.grey[700], fontSize: 15.0, fontWeight: FontWeight.bold),
+                              border: new OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      _sponsorVerified == true
+                      ? new Container(
+                        height: MediaQuery.of(context).size.height*0.06,
+                        child: new Center(
+                          child: new Text('This producer will be notified.',
+                          style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      )
+                      : new InkWell(
+                        onTap: () async {
+                          if(_sponsorUsernameEditingController.value.text.length > 1 ) {
+                            await FirebaseFirestore.instance.collection('users').doc(_sponsorUsernameEditingController.value.text).get().then((value) {
+                              if(value.exists) {
+                                print('OK user Exist');
+                                setState(() {
+                                  _currentSponsorUsername = value.data()['userName'];
+                                  _sponsorVerified = true;
+                                });
+                              } else {
+                                print('Sorry no exist');
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return new CupertinoAlertDialog(
+                                      title: new Text('Check done',
+                                      style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+                                      ),
+                                      content: new Padding(
+                                        padding: EdgeInsets.only(top: 10.0),
+                                        child: new Text('Producer not found. Check spelling.',
+                                      style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.normal),
+                                      )),
+                                    actions: <Widget>[
+                                      new CupertinoDialogAction(
+                                        isDefaultAction: true,
+                                        child: new Text("OK"),
+                                        onPressed: (){Navigator.pop(context);},
+                                      ),
+                                    ],
+                                    );
+                              }
+                              );
+                              }
+                            });
+                            /*var snapshot = await FirebaseFirestore.instance.collection('users').get();
+                              snapshot.docs.forEach((element) { 
+                                if(element.data()['userName'] == _sponsorUsernameEditingController.value.text) {
+                                  print('Ok verified');
+                                } else {
+                                   print('NO verified');
+                                }
+                              });*/
+                          } else {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return new CupertinoAlertDialog(
+                                  title: new Text('Invitations',
+                                  style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+                                  ),
+                                  content: new Padding(
+                                    padding: EdgeInsets.only(top: 10.0),
+                                    child: new Text('You have to put your producer friend username before check it.',
+                                  style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.normal),
+                                  )),
+                                 actions: <Widget>[
+                                  new CupertinoDialogAction(
+                                    isDefaultAction: true,
+                                    child: new Text("OK"),
+                                    onPressed: (){Navigator.pop(context);},
+                                  ),
+                                 ],
+                                );
+                              }
+                              );
+                          }
+                        },
+                      child: new Container(
+                        height: MediaQuery.of(context).size.height*0.06,
+                        width: MediaQuery.of(context).size.width*0.40,
+                        decoration: new BoxDecoration(
+                          border: new Border.all(
+                            color: Colors.deepPurpleAccent,
+                            width: 2.0,
+                          ),
+                          borderRadius: new BorderRadius.circular(5.0)
+                        ),
+                          child: new Padding(
+                            padding: EdgeInsets.all(0.0),
+                          child: new Center(
+                          child: new Text('CHECK',
+                          style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+                        ))),
+                      )),
+                      ],
+                    ),
+                  ),
+                 ],
+               ),
+           ),
       // UserName page
            new Container(
              height: MediaQuery.of(context).size.height*0.40,
@@ -147,6 +312,7 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                           child: new TextField(
                             style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
                             controller: _userNameEditingController,
+                            keyboardAppearance: Brightness.dark,
                             keyboardType: TextInputType.text,
                             textCapitalization: TextCapitalization.sentences,
                             minLines: 1,
@@ -377,20 +543,28 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                  //BUTTON CONTINUE
                  new InkWell(
                    onTap: () {
+                    if(_profileCreationController.page == 0) {
+                      if(_sponsorVerified == true) {
+                      setState(() {
+                        currentSponsorUID = _sponsorUsernameEditingController.value.text.toString();
+                      });
+                      }
+                      _profileCreationController.nextPage(duration: new Duration(milliseconds: 1), curve: Curves.bounceIn).whenComplete(() => _sponsorUsernameEditingController.clear());
+                    }
                      //UserName page
-                     if(_profileCreationController.page == 0 && _userNameEditingController.value.text.length > 2) {
+                     else if(_profileCreationController.page == 1 && _userNameEditingController.value.text.length > 2) {
                        setState(() {
                          currentUsername = _userNameEditingController.value.text.toString();
                          });
                        _profileCreationController.nextPage(duration: new Duration(milliseconds: 1), curve: Curves.bounceIn).whenComplete(() => _userNameEditingController.clear());
                     //typeOfUser page
-                     } else if(_profileCreationController.page == 1 && _image != null) {
+                     } else if(_profileCreationController.page == 2 && _image != null) {
                        setState(() {
                          profileInCreation = true;
                        });
                        _profileCreationController.nextPage(duration: new Duration(milliseconds: 1), curve: Curves.bounceIn);
                         mainRequestStockDataForDJ();
-                     } else if(_profileCreationController.page == 2) {
+                     } else if(_profileCreationController.page == 3) {
                       Navigator.pushAndRemoveUntil(
                       context, new PageRouteBuilder(pageBuilder: (_,__,___) => 
                       new OnboardingPage(
@@ -407,7 +581,7 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                      color: Colors.transparent,
                      border: new Border.all(
                        width: 2.0,
-                       color: Colors.yellowAccent,
+                       color: Colors.purpleAccent,
                      ),
                      borderRadius: new BorderRadius.circular(10.0)
                    ),
@@ -464,18 +638,20 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
     }*/
 
     mainRequestStockDataForDJ() async  {
+      int _timestampCreation = DateTime.now().microsecondsSinceEpoch;
       //ProfilePhoto
       firebase_storage.Reference storageReference = firebase_storage.FirebaseStorage.instance
         .ref()
         .child('${widget.currentUser}/profilePhoto');
         firebase_storage.UploadTask uploadTask = storageReference.putFile(_image);
         await uploadTask;
-        print('ProfilePhoto uploaded (Storage)');
+        print('Firebase storage : Photo uploaded.');
         storageReference.getDownloadURL().then((filePhotoURL) async {
             FirebaseFirestore.instance
               .collection('users')
               .doc(widget.currentUser)
               .set({
+                'premiumVersion': false,
                 'uid': widget.currentUser,
                 'userName': currentUsername,
                 'email': widget.currentUserEmail,
@@ -489,7 +665,19 @@ class ProfileCreationProcessPageState extends State<ProfileCreationProcessPage> 
                 'instagramLink': null,
                 'spotifyLink': null,
               }).whenComplete(() {
-                print('profile created (Cloud firestore)');
+                if(_sponsorVerified == true && currentSponsorUID != null) {
+                  FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(currentSponsorUID)
+                    .collection('invitationsSent')
+                    .doc()
+                    .set({
+                      'RecipientUID': widget.currentUser,
+                      'RecipientUsername': currentUsername,
+                      'timestamp': _timestampCreation,
+                    }).whenComplete(() => print('Cloud Firestore : Sponsor credited.'));
+                }
+                print('Cloud Firestore : Profile created.');
                 if(this.mounted) {
                   setState(() {
                     profileInCreation = false;

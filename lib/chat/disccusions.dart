@@ -173,11 +173,14 @@ class DiscussionsPageState extends State<DiscussionsPage> {
                                                      currentUser: widget.currentUser,
                                                      currentUserphoto: widget.currentUserPhoto,
                                                      currentUsername: widget.currentUserUsername,
-                                                     //RecicpientUser datas
-                                                     recipientUserUID: ds.data()['uid'],
+                                                     //
+                                                     conversationID: ds.data()['uid'],
+                                                     titleOfConversation: ds.data()['userName'],
+                                                     //RecipientData
+                                                     recipientUID: ds.data()['uid'],
                                                      recipientUserPhoto: ds.data()['profilePhoto'],
-                                                     recipientUserUsername: ds.data()['userName'],
-                                                     )));
+                                                     recipientUsername: ds.data()['userName'],
+                                                    )));
                                                },
                                                leading: new Container(
                                                height: MediaQuery.of(context).size.height*0.04,
@@ -267,7 +270,7 @@ class DiscussionsPageState extends State<DiscussionsPage> {
                               new Icon(Icons.more_horiz_rounded, size: 30.0, color: Colors.white),
                               new Padding(
                               padding: EdgeInsets.only(top: 30.0),
-                              child: new Text('No message received yet.',
+                              child: new Text('No conversation yet.',
                               style: new TextStyle(color: Colors.white, fontSize: 13.0, fontWeight: FontWeight.bold),
                               )),
                             ],
@@ -288,7 +291,6 @@ class DiscussionsPageState extends State<DiscussionsPage> {
                           child: new Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              //new CupertinoActivityIndicator(radius: 15.0, animating: true),
                             ],
                           ),
                           )),
@@ -311,27 +313,31 @@ class DiscussionsPageState extends State<DiscussionsPage> {
                                 Navigator.push(
                                   context, 
                                   new CupertinoPageRoute(builder: (context) => new ChatPage(
-                                    heroTag: ds.data()['recipientUID'],
+                                    heroTag: ds.data()['titleOfConversation'],
                                     //CurrentUser
                                     currentUser: widget.currentUser,
                                     currentUserphoto: widget.currentUserPhoto,
                                     currentUsername: widget.currentUserUsername,
-                                    //RecipientUserDatas
-                                    recipientUserUID: ds.data()['recipientUID'],
+                                    //RecipientUser
+                                    recipientUID: ds.data()['recipientUID'],
+                                    recipientUsername: ds.data()['recipientUsername'],
                                     recipientUserPhoto: ds.data()['recipientUserPhoto'],
-                                    recipientUserUsername: ds.data()['recipientUsername'],
+                                    conversationID: ds.data()['conversationID'],
+                                    titleOfConversation: ds.data()['titleOfConversation'],
                                     )));
                               },
                               leading: new Container(
                               height: MediaQuery.of(context).size.height*0.05,
                               width: MediaQuery.of(context).size.height*0.05,
                               child: new ClipOval(
-                                child: ds.data()['recipientUserPhoto'] != null
-                                ? new Image.network(ds.data()['recipientUserPhoto'], fit: BoxFit.cover)
+                                child: ds.data()['coverOfConversation'] != null && ds.data()['coverOfConversation'] == 'reverbsImage'
+                                ? new Image.asset('lib/assets/reverbsCover.png', fit: BoxFit.cover)
+                                : ds.data()['coverOfConversation'] != null && ds.data()['coverOfConversation'] != 'reverbsImage'
+                                ? new Image.network(ds.data()['coverOfConversation'], fit: BoxFit.cover)
                                 : new Container(),
                             )),
-                            title: new Text(ds.data()['recipientUsername'] != null
-                            ? ds.data()['recipientUsername']
+                            title: new Text(ds.data()['titleOfConversation'] != null
+                            ? ds.data()['titleOfConversation']
                             : 'Unknown',
                             style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
                             ),

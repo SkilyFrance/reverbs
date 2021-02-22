@@ -34,6 +34,7 @@ class _SplashPageState extends State<SplashPage> {
               currentUser: user.uid,
               currentUserUsername: value.data()['userName'],
               currentUserPhoto: value.data()['profilePhoto'],
+              premiumVersion: value.data()['premiumVersion']
               )));
           } else {
             //Value No exist

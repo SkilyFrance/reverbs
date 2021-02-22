@@ -498,6 +498,7 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                         .collection('projects')
                         .doc(_timestampUpload+widget.currentUser)
                         .set({
+                          'alreadyAccepted': false,
                           'context': _projectContextTextController.value.text.toString(),
                           'documentUID': _timestampUpload+widget.currentUser,
                           'adminUID': widget.currentUser,
@@ -539,9 +540,6 @@ class ProjectPublicationPageState extends State<ProjectPublicationPage> {
                           : 'ProjectfutureHouse',
                           ).doc(_timestampUpload+widget.currentUser)
                           .set({
-                          'submissions':{
-                            'OOOOOOOOO': '0000000',
-                          },
                           'context': _projectContextTextController.value.text.toString(),
                           'documentUID': _timestampUpload+widget.currentUser,
                           'adminUID': widget.currentUser,

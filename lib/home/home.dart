@@ -9,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:share/share.dart';
 
 import 'myprojects/projectInProgress.dart';
 
@@ -17,12 +19,14 @@ class HomePage extends StatefulWidget {
   String currentUser;
   String currentUserPhoto;
   String currentUserUsername;
+  bool premiumVersion;
 
   HomePage({
     Key key, 
     this.currentUser, 
     this.currentUserPhoto,
     this.currentUserUsername,
+    this.premiumVersion,
     }) : super(key: key);
 
   @override
@@ -63,7 +67,11 @@ class HomePageState extends State<HomePage> {
                 splashColor: Colors.transparent,
                 icon: new Icon(Icons.person, color: Colors.purpleAccent, size: 25.0),
                 onPressed: () {
-                  Navigator.push(context, new CupertinoPageRoute(fullscreenDialog: true, builder: (context) => new MyProfilePage()));
+                  Navigator.push(context, new CupertinoPageRoute(fullscreenDialog: true, builder: (context) => new MyProfilePage(
+                    currentUser: widget.currentUser,
+                    currentUsername: widget.currentUserUsername,
+                    currentUserPhoto: widget.currentUserPhoto,
+                  )));
                 },
                 )),
             ),
@@ -91,7 +99,7 @@ class HomePageState extends State<HomePage> {
                       color: Colors.transparent,
                     ),
                     new Container(
-                      child: new Text('My projects',
+                      child: new Text('Dashboard',
                       style: new TextStyle(color: Colors.grey, fontSize: 20.0, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -104,26 +112,21 @@ class HomePageState extends State<HomePage> {
                 width: MediaQuery.of(context).size.width,
                 color: Colors.transparent,
               ),
+              new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
               //Divider
               new Container(
-                height: MediaQuery.of(context).size.height*0.28,
+                height: MediaQuery.of(context).size.height*0.20,
+                width: MediaQuery.of(context).size.width*0.45,
                 constraints: new BoxConstraints(
-                  minHeight: 280.0,
+                  minHeight: 190.0,
                 ),
                 child: new StreamBuilder(
                   stream: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection('projects').snapshots(),
                   builder: (BuildContext context, snapshot) {
                     if(snapshot.connectionState == ConnectionState.waiting) {
                       return new Container(
-                        child: new Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            new CupertinoActivityIndicator(radius: 7.0, animating: true),
-                            new Text('Fetching datas ...',
-                            style: new TextStyle(color: Colors.grey, fontSize: 15.0, fontWeight: FontWeight.bold),
-                            )
-                          ],
-                        ),
                       );
                     }
                     if(snapshot.hasError) {
@@ -140,64 +143,13 @@ class HomePageState extends State<HomePage> {
                           ),
                         );
                       }
-                    if(!snapshot.hasData) {
-                    return new Padding(
-                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: new Container(
-                        height: MediaQuery.of(context).size.height*0.28,
-                        width: MediaQuery.of(context).size.width*0.90,
-                        decoration: new BoxDecoration(
-                          color: Colors.grey[900].withOpacity(0.5),
-                          borderRadius: new BorderRadius.circular(10.0),
-                        ),
-                        child: new Stack(
-                          children: [
-                        new Positioned(
-                        top: 0.0,
-                        left: 0.0,
-                        right: 0.0,
-                        bottom: 0.0,
-                        child: new Container(
-                          decoration: new BoxDecoration(
-                            borderRadius: new BorderRadius.circular(10.0),
-                            color: Colors.black.withOpacity(0.9),
-                          ),
-                          child: new Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              new Text('Your project management tool',
-                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                              ),
-                              new IconButton(
-                                icon: new Icon(Icons.add_box_rounded, size: 40.0, color: Colors.white), 
-                                onPressed: () {
-                                  Navigator.push(context, new CupertinoPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => new ProjectPublicationPage(
-                                      currentUser: widget.currentUser,
-                                      currentUserPhoto: widget.currentUserPhoto,
-                                      currentUserUsername: widget.currentUserUsername,
-                                    )));
-                                }),
-                              new Text('Add your first project.',
-                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            );
-            }
 
-                    if(snapshot.data.documents.isEmpty) {
+                    if(!snapshot.hasData || snapshot.data.documents.isEmpty) {
                     return new Padding(
-                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                      padding: EdgeInsets.only(left: 0.0, right: 0.0),
                       child: new Container(
                         height: MediaQuery.of(context).size.height*0.28,
-                        width: MediaQuery.of(context).size.width*0.90,
+                        width: MediaQuery.of(context).size.width*0.45,
                         decoration: new BoxDecoration(
                           color: Colors.grey[900].withOpacity(0.5),
                           borderRadius: new BorderRadius.circular(10.0),
@@ -212,16 +164,13 @@ class HomePageState extends State<HomePage> {
                         child: new Container(
                           decoration: new BoxDecoration(
                             borderRadius: new BorderRadius.circular(10.0),
-                            color: Colors.black.withOpacity(0.9),
+                            color: Colors.grey[900].withOpacity(0.5),
                           ),
                           child: new Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              new Text('Your project management tool',
-                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                              ),
                               new IconButton(
-                                icon: new Icon(Icons.add_box_rounded, size: 40.0, color: Colors.white), 
+                                icon: new Icon(Icons.add_box_rounded, size: 45.0, color: Colors.white), 
                                 onPressed: () {
                                   Navigator.push(context, new CupertinoPageRoute(
                                     fullscreenDialog: true,
@@ -232,7 +181,7 @@ class HomePageState extends State<HomePage> {
                                     )));
                                 }),
                               new Text('Add your first project.',
-                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                              style: new TextStyle(color: Colors.white, fontSize: 10.0, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -246,10 +195,10 @@ class HomePageState extends State<HomePage> {
 
 
                     return new Padding(
-                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                      padding: EdgeInsets.only(left: 0.0, right: 0.0),
                       child: new Container(
-                        height: MediaQuery.of(context).size.height*0.28,
-                        width: MediaQuery.of(context).size.width*0.90,
+                        height: MediaQuery.of(context).size.height*0.20,
+                       width: MediaQuery.of(context).size.width*0.45,
                         decoration: new BoxDecoration(
                           color: Colors.grey[900].withOpacity(0.5),
                           borderRadius: new BorderRadius.circular(10.0),
@@ -259,16 +208,16 @@ class HomePageState extends State<HomePage> {
                           children: [
                             new Container(
                               height: MediaQuery.of(context).size.height*0.07,
-                              width: MediaQuery.of(context).size.width*0.90,
+                              width: MediaQuery.of(context).size.width*0.45,
                               color: Colors.transparent,
                               child: new Center(child: new Text('Project in progress',
-                              style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                              style: new TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold),
                               ),
                               ),
                             ),
                             new Container(
-                              height: MediaQuery.of(context).size.height*0.20,
-                              width: MediaQuery.of(context).size.width*0.90,
+                              height: MediaQuery.of(context).size.height*0.13,
+                              width: MediaQuery.of(context).size.width*0.45,
                               color: Colors.transparent,
                               child: new Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -287,118 +236,23 @@ class HomePageState extends State<HomePage> {
                                     splashColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                   child: new Container(
-                                    height: MediaQuery.of(context).size.height*0.15,
-                                    width: MediaQuery.of(context).size.height*0.15,
+                                    height: MediaQuery.of(context).size.height*0.10,
+                                    width: MediaQuery.of(context).size.height*0.10,
                                     decoration: new BoxDecoration(
                                       color: Colors.transparent,
                                       shape: BoxShape.circle,
                                       border: new Border.all(
                                         width: 5.0,
-                                        color: Colors.purpleAccent,
+                                        color: Colors.deepPurpleAccent,
                                       ),
                                     ),
                                     child: new Center(
                                       child: new Text(snapshot.data.documents.length.toString(),
-                                      style: new TextStyle(color: Colors.white, fontSize: 40.0, fontWeight: FontWeight.bold),
+                                      style: new TextStyle(color: Colors.white, fontSize: 35.0, fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                   ),
                                   ),
-                                  /*new Container(
-                                    height: MediaQuery.of(context).size.height*0.07,
-                                    width: MediaQuery.of(context).size.width*0.90,
-                                    color: Colors.transparent,
-                                    // Project in progress LISTILE //
-                                    child: new ListTile(
-                                      onTap: () {
-                                        Navigator.push(context, new CupertinoPageRoute(
-                                          builder: (context) => new ProjectInProgressPage(
-                                            currentUser: widget.currentUser,
-                                            currentUserPhoto: widget.currentUserPhoto,
-                                            currentUserUsername: widget.currentUserUsername,
-                                            lengthOfSnapshot: snapshot.data.documents.length,
-                                            snapshotFromHome: snapshot,
-                                        )));
-                                      },
-                                      leading: new Container(
-                                        height: MediaQuery.of(context).size.height*0.045,
-                                        width: MediaQuery.of(context).size.height*0.045,
-                                        decoration: new BoxDecoration(
-                                          color: Colors.purpleAccent,
-                                          borderRadius: new BorderRadius.circular(5.0),
-                                        ),
-                                        child: new Center(
-                                          child: new Icon(Icons.lightbulb, color: Colors.white, size: 20.0),
-                                        ),
-                                      ),
-                                      title: new Text('Projects in progress', style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                      ),
-                                      trailing: new Text(
-                                        snapshot.data.documents.length.toString(),
-                                        style: new TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                  new Padding(
-                                    padding: EdgeInsets.only(left: 80.0),
-                                  child: new Divider(height: 2.0,color: Colors.grey[800])),
-                                  new Container(
-                                    height: MediaQuery.of(context).size.height*0.07,
-                                    width: MediaQuery.of(context).size.width*0.90,
-                                    color: Colors.transparent,
-                                    // FILE LISTILE //
-                                    child: new ListTile(
-                                      onTap: () {
-                                        //Navigator.push(context, new CupertinoPageRoute(builder: (context) => new FileSharedPage()));
-                                      },
-                                      leading: new Container(
-                                        height: MediaQuery.of(context).size.height*0.045,
-                                        width: MediaQuery.of(context).size.height*0.045,
-                                        decoration: new BoxDecoration(
-                                          color: Colors.purpleAccent[700],
-                                          borderRadius: new BorderRadius.circular(5.0),
-                                        ),
-                                        child: new Center(
-                                          child: new Icon(Icons.file_copy_rounded, color: Colors.white, size: 20.0),
-                                        ),
-                                      ),
-                                      title: new Text('Files shared', style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                      ),
-                                      trailing: new Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey),
-                                    ),
-                                  ),
-                                  new Padding(
-                                    padding: EdgeInsets.only(left: 80.0),
-                                  child: new Divider(height: 2.0,color: Colors.grey[800])),
-                                  new Container(
-                                    height: MediaQuery.of(context).size.height*0.07,
-                                    width: MediaQuery.of(context).size.width*0.90,
-                                    color: Colors.transparent,
-                                    // FILE LISTILE //
-                                    child: new ListTile(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context, 
-                                          new CupertinoPageRoute(builder: (context) => new ProjectSettingsPage(
-  
-                                        )));
-                                      },
-                                      leading: new Container(
-                                        height: MediaQuery.of(context).size.height*0.045,
-                                        width: MediaQuery.of(context).size.height*0.045,
-                                        decoration: new BoxDecoration(
-                                          color: Colors.deepPurpleAccent,
-                                          borderRadius: new BorderRadius.circular(5.0),
-                                        ),
-                                        child: new Center(
-                                          child: new Icon(Icons.settings, color: Colors.white, size: 20.0),
-                                        ),
-                                      ),
-                                      title: new Text('Settings', style: new TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                      ),
-                                      trailing: new Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey),
-                                    )
-                                  ),*/
                                 ],
                               ),
                             ),
@@ -408,7 +262,463 @@ class HomePageState extends State<HomePage> {
                     );
     
           },
-        ),
+          ),
+              ),
+              widget.premiumVersion == true
+              ? new Container(
+                height: MediaQuery.of(context).size.height*0.20,
+                width: MediaQuery.of(context).size.width*0.45,
+                constraints: new BoxConstraints(
+                  minHeight: 190.0,
+                ),
+                  decoration: new BoxDecoration(
+                    borderRadius: new BorderRadius.circular(10.0),
+                    gradient: new LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.grey[900].withOpacity(0.5), Colors.grey[900].withOpacity(0.5)]
+                    )),
+                    child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        new Container(
+                          height: MediaQuery.of(context).size.height*0.07,
+                          width: MediaQuery.of(context).size.width*0.45,
+                          color: Colors.transparent,
+                          child: new Center(child: new Text('Reverbs premium.',
+                          style: new TextStyle(color: Colors.yellow, fontSize: 12.0, fontWeight: FontWeight.bold),
+                          ),
+                          ),
+                        ),
+                            new Container(
+                              height: MediaQuery.of(context).size.height*0.13,
+                              width: MediaQuery.of(context).size.width*0.45,
+                              color: Colors.transparent,
+                              child: new Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                new Padding(
+                                  padding: EdgeInsets.only(bottom: 10.0),
+                                child: new Text('⭐',
+                                style: new TextStyle(fontSize: 35.0),
+                                )),
+                                  new FlatButton(
+                                    color: Colors.yellow[700],
+                                    shape: new RoundedRectangleBorder(
+                                      borderRadius: new BorderRadius.circular(5.0),
+                                    ),
+                                    highlightColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    splashColor: Colors.transparent,
+                                    onPressed: () {
+                                    showBarModalBottomSheet(
+                                      context: context, 
+                                      builder: (context){
+                                        return StatefulBuilder(
+                                          builder: (BuildContext context, StateSetter modalSetState) {
+                                           return new Container(
+                                           height: MediaQuery.of(context).size.height*0.50,
+                                           width: MediaQuery.of(context).size.width,
+                                           color: Color(0xFF181818),
+                                           child: new Column(
+                                             mainAxisAlignment: MainAxisAlignment.start,
+                                             children: [
+                                               new Container(
+                                                 height: MediaQuery.of(context).size.height*0.02,
+                                                 width: MediaQuery.of(context).size.width,
+                                               ),
+                                               new Container(
+                                                 color: Colors.transparent,
+                                                 child: new Center(
+                                                   child: new Text('Reverbs premium',
+                                                   style: new TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold),
+                                                   ),
+                                                 ),
+                                               ),
+                                               new Container(
+                                                height: MediaQuery.of(context).size.height*0.40,
+                                                width: MediaQuery.of(context).size.width,
+                                                color: Colors.transparent,
+                                                child: new Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    new Container(
+                                                      height: MediaQuery.of(context).size.height*0.16,
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: new Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                        children: [
+                                                          new Container(
+                                                            height: MediaQuery.of(context).size.height*0.16,
+                                                            width: MediaQuery.of(context).size.width*0.30,
+                                                            decoration: new BoxDecoration(
+                                                              gradient: new LinearGradient(
+                                                                begin: Alignment.topLeft,
+                                                                end: Alignment.bottomRight,
+                                                                colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                                              ),
+                                                              borderRadius: new BorderRadius.circular(10.0),
+                                                            ),
+                                                            child: new Column(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                new Text('Projects',
+                                                                style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                new Icon(Icons.check_circle_outline_rounded, size: 35.0, color: Colors.white),
+                                                                new Text('Unlimited',
+                                                                style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                         new Container(
+                                                            height: MediaQuery.of(context).size.height*0.16,
+                                                            width: MediaQuery.of(context).size.width*0.30,
+                                                            decoration: new BoxDecoration(
+                                                              gradient: new LinearGradient(
+                                                                begin: Alignment.topLeft,
+                                                                end: Alignment.bottomRight,
+                                                                colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                                              ),
+                                                              borderRadius: new BorderRadius.circular(10.0),
+                                                            ),
+                                                            child: new Column(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                new Text('Messages',
+                                                                style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                new Icon(Icons.check_circle_outline_rounded, size: 35.0, color: Colors.white),
+                                                                new Text('Unlimited',
+                                                                style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                         new Container(
+                                                            height: MediaQuery.of(context).size.height*0.16,
+                                                            width: MediaQuery.of(context).size.width*0.30,
+                                                            decoration: new BoxDecoration(
+                                                              gradient: new LinearGradient(
+                                                                begin: Alignment.topLeft,
+                                                                end: Alignment.bottomRight,
+                                                                colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                                              ),
+                                                              borderRadius: new BorderRadius.circular(10.0),
+                                                            ),
+                                                            child: new Column(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                new Text('Storage',
+                                                                style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                new Icon(Icons.check_circle_outline_rounded, size: 35.0, color: Colors.white),
+                                                                new Text('Unlimited',
+                                                                style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    new Container(
+                                                      color: Colors.transparent,
+                                                      child: new Column(
+                                                        mainAxisAlignment: MainAxisAlignment.start,
+                                                        children: [
+                                                          new Padding(
+                                                            padding: EdgeInsets.only(top: 10.0),
+                                                          child: new Text('Get 1 more month ?',
+                                                          style: new TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+                                                          )),
+                                                          new Padding(
+                                                            padding: EdgeInsets.only(top: 20.0, bottom: 10.0),
+                                                          child: new Text("More you share, more it's free.",
+                                                          style: new TextStyle(color: Colors.grey, fontSize: 13.0, fontWeight: FontWeight.normal),
+                                                          )),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    new Padding(
+                                                      padding: EdgeInsets.only(top: 10.0),
+                                                    child: new FlatButton(
+                                                      splashColor: Colors.transparent,
+                                                      highlightColor: Colors.transparent,
+                                                      focusColor: Colors.transparent,
+                                                      color: Colors.deepPurpleAccent,
+                                                      shape: new RoundedRectangleBorder(
+                                                        borderRadius: new BorderRadius.circular(5.0),
+                                                      ),
+                                                      onPressed: () {
+                                                        final RenderBox box = context.findRenderObject();
+                                                        Share.share(
+                                                          'https://testflight.apple.com/join/UrDA8giU',
+                                                          subject: 'Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put : ${widget.currentUserUsername} as a sponsor on your first connection. hope to see you.',
+                                                          sharePositionOrigin: box.localToGlobal(Offset.zero)&box.size).whenComplete(() {
+                                                            print('Ok');
+                                                          });
+                                                      }, 
+                                                      child: new Text('INVITE',
+                                                      style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                      ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                               ),
+                                               ],
+                                              ),
+                                           );
+                                          },
+                                        );
+                                      });
+                                    }, 
+                                    child: new Text('Share',
+                                    style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                      ],
+                    ),
+              )
+//////////// REVERBS NORMAL ////////////////////////////////////
+///////////////////////////////////////////////////////////////
+              : new Container(
+                height: MediaQuery.of(context).size.height*0.20,
+                width: MediaQuery.of(context).size.width*0.45,
+                  decoration: new BoxDecoration(
+                    gradient: new LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.purpleAccent, Colors.deepPurpleAccent]
+                    ),
+                    //color: Colors.grey[900].withOpacity(0.5),
+                    borderRadius: new BorderRadius.circular(10.0),
+                  ),
+                constraints: new BoxConstraints(
+                  minHeight: 190.0,
+                ),
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    new Container(
+                      height: MediaQuery.of(context).size.height*0.07,
+                      width: MediaQuery.of(context).size.width*0.45,
+                      color: Colors.transparent,
+                      child: new Center(child: new Text('Get premium version',
+                      style: new TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold),
+                      ),
+                      ),
+                    ),
+                    
+                            new Container(
+                              height: MediaQuery.of(context).size.height*0.13,
+                              width: MediaQuery.of(context).size.width*0.45,
+                              color: Colors.transparent,
+                              child: new Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                new Padding(
+                                  padding: EdgeInsets.only(bottom: 10.0),
+                                child: new Text('🚀',
+                                style: new TextStyle(fontSize: 35.0),
+                                )),
+                                  new FlatButton(
+                                    color: Colors.black,
+                                    shape: new RoundedRectangleBorder(
+                                      borderRadius: new BorderRadius.circular(5.0),
+                                    ),
+                                    highlightColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    splashColor: Colors.transparent,
+                                    onPressed: () {
+                                    showBarModalBottomSheet(
+                                      context: context, 
+                                      builder: (context){
+                                        return StatefulBuilder(
+                                          builder: (BuildContext context, StateSetter modalSetState) {
+                                           return new Container(
+                                           height: MediaQuery.of(context).size.height*0.50,
+                                           width: MediaQuery.of(context).size.width,
+                                           color: Color(0xFF181818),
+                                           child: new Column(
+                                             mainAxisAlignment: MainAxisAlignment.start,
+                                             children: [
+                                               new Container(
+                                                 height: MediaQuery.of(context).size.height*0.02,
+                                                 width: MediaQuery.of(context).size.width,
+                                               ),
+                                               new Container(
+                                                 color: Colors.transparent,
+                                                 child: new Center(
+                                                   child: new Text('Reverbs premium',
+                                                   style: new TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold),
+                                                   ),
+                                                 ),
+                                               ),
+                                               new Container(
+                                                height: MediaQuery.of(context).size.height*0.40,
+                                                width: MediaQuery.of(context).size.width,
+                                                color: Colors.transparent,
+                                                child: new Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    new Container(
+                                                      height: MediaQuery.of(context).size.height*0.16,
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: new Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                        children: [
+                                                          new Container(
+                                                            height: MediaQuery.of(context).size.height*0.16,
+                                                            width: MediaQuery.of(context).size.width*0.30,
+                                                            decoration: new BoxDecoration(
+                                                              gradient: new LinearGradient(
+                                                                begin: Alignment.topLeft,
+                                                                end: Alignment.bottomRight,
+                                                                colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                                              ),
+                                                              borderRadius: new BorderRadius.circular(10.0),
+                                                            ),
+                                                            child: new Column(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                new Text('Projects',
+                                                                style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                new Icon(Icons.check_circle_outline_rounded, size: 35.0, color: Colors.white),
+                                                                new Text('Unlimited',
+                                                                style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                         new Container(
+                                                            height: MediaQuery.of(context).size.height*0.16,
+                                                            width: MediaQuery.of(context).size.width*0.30,
+                                                            decoration: new BoxDecoration(
+                                                              gradient: new LinearGradient(
+                                                                begin: Alignment.topLeft,
+                                                                end: Alignment.bottomRight,
+                                                                colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                                              ),
+                                                              borderRadius: new BorderRadius.circular(10.0),
+                                                            ),
+                                                            child: new Column(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                new Text('Messages',
+                                                                style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                new Icon(Icons.check_circle_outline_rounded, size: 35.0, color: Colors.white),
+                                                                new Text('Unlimited',
+                                                                style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                         new Container(
+                                                            height: MediaQuery.of(context).size.height*0.16,
+                                                            width: MediaQuery.of(context).size.width*0.30,
+                                                            decoration: new BoxDecoration(
+                                                              gradient: new LinearGradient(
+                                                                begin: Alignment.topLeft,
+                                                                end: Alignment.bottomRight,
+                                                                colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                                              ),
+                                                              borderRadius: new BorderRadius.circular(10.0),
+                                                            ),
+                                                            child: new Column(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                new Text('Storage',
+                                                                style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                new Icon(Icons.check_circle_outline_rounded, size: 35.0, color: Colors.white),
+                                                                new Text('Unlimited',
+                                                                style: new TextStyle(color: Colors.black, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    new Container(
+                                                      color: Colors.transparent,
+                                                      child: new Column(
+                                                        mainAxisAlignment: MainAxisAlignment.start,
+                                                        children: [
+                                                          new Padding(
+                                                            padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                                                          child: new Text("More you share, more it's free.",
+                                                          style: new TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold),
+                                                          )),
+                                                          new Padding(
+                                                            padding: EdgeInsets.only(top: 15.0),
+                                                          child: new FutureBuilder(
+                                                            future: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection('invitationsSent').get(),
+                                                            builder: (BuildContext context, snapshot){
+                                                              if(snapshot.hasError){return new Container();}
+                                                              if(!snapshot.hasData || snapshot.data.documents.isEmpty){
+                                                                return new Text('Invite 5 producers friends.',
+                                                                style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold));
+                                                             }
+                                                             return new Text('Invite ${5-(snapshot.data.documents.length)} producers friends.',
+                                                             style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold));
+                                                            })),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    new Padding(
+                                                      padding: EdgeInsets.only(top: 10.0),
+                                                    child: new FlatButton(
+                                                      splashColor: Colors.transparent,
+                                                      highlightColor: Colors.transparent,
+                                                      focusColor: Colors.transparent,
+                                                      color: Colors.deepPurpleAccent,
+                                                      shape: new RoundedRectangleBorder(
+                                                        borderRadius: new BorderRadius.circular(5.0),
+                                                      ),
+                                                      onPressed: () {
+                                                        final RenderBox box = context.findRenderObject();
+                                                        Share.share(
+                                                          'https://testflight.apple.com/join/UrDA8giU',
+                                                          subject: 'Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put : ${widget.currentUserUsername} as a sponsor on your first connection. hope to see you.',
+                                                          sharePositionOrigin: box.localToGlobal(Offset.zero)&box.size).whenComplete(() {
+                                                            print('Ok');
+                                                          });
+                                                      }, 
+                                                      child: new Text('INVITE',
+                                                      style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                      ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                               ),
+                                               ],
+                                              ),
+                                           );
+                                          },
+                                        );
+                                      });
+                                    }, 
+                                    child: new Text('Get premium',
+                                    style: new TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                  ],
+                ),
+              ),
+                ],
               ),
               //Divider
               new Container(

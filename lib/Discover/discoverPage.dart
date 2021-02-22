@@ -382,27 +382,28 @@ final Map<int, Widget> segmentTextWidgets = <int, Widget>{
                                 borderRadius: new BorderRadius.circular(5.0),
                                 border: new Border.all(
                                   width: 1.0,
-                                  color: ds.data()['submissions']['${widget.currentUser}'] != null ? Colors.transparent : Colors.grey,
+                                  color: ds.data()['submissions'] != null && ds.data()['submissions'][widget.currentUser] != null ? Colors.transparent : Colors.grey,
                                 ),
                               ),
                             child: 
-                            ds.data()['submissions'][widget.currentUser] != null
+                            ds.data()['submissions'] != null && ds.data()['submissions'][widget.currentUser] != null
                             ? new Container(
                               child: new Center(
                                 child: new Text(
                                   ds.data()['submissions'][widget.currentUser] == 'inWaiting'
-                                  ? 'In waiting'
-                                  : ds.data()['submissions'][widget.currentUser] == 'Accepted'
-                                  ? 'Accepted'
-                                  : 'Declined',
-                                  style: new TextStyle(color: Colors.deepPurpleAccent, fontSize: 13.0, fontWeight: FontWeight.bold),
+                                  || ds.data()['submissions'][widget.currentUser] == 'Accepted'
+                                  || ds.data()['submissions'][widget.currentUser] == 'inDiscussion'
+                                  || ds.data()['submissions'][widget.currentUser] == 'inDiscussion'
+                                  ? 'Submitted.'
+                                  : '',
+                                  style: new TextStyle(color: Colors.grey, fontSize: 13.0, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             )
                             : new InkWell(
                               onTap: () {
                                 print(ds.data()['submissions'][widget.currentUser]);
-                                submiToAProject(ds.data()['adminUID'], ds.data()['documentUID'], projectMusicStyle, ds.data()['submissions']);
+                                submiToAProject(musicStyle, ds.data()['adminUID'], ds.data()['documentUID'], projectMusicStyle, ds.data()['submissions']);
                                 Scaffold.of(context).showSnackBar(submissionSnackBar);
                                },
                               child: new Container(
@@ -1001,6 +1002,8 @@ final Map<int, Widget> segmentTextWidgets = <int, Widget>{
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               new InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
                 onTap: () {
                   showBarModalBottomSheet(
                     context: context, 
@@ -1432,7 +1435,7 @@ final Map<int, Widget> segmentTextWidgets = <int, Widget>{
     );
   }
 
-  submiToAProject(String adminUID ,String projectID, String musicStyle, Map<String,dynamic> mapOfSubmissions) {
+  submiToAProject(String projectStyleWithUnion ,String adminUID ,String projectID, String musicStyle, Map<String,dynamic> mapOfSubmissions) {
     FirebaseFirestore.instance
       .collection('users')
       .doc(adminUID)
@@ -1442,6 +1445,7 @@ final Map<int, Widget> segmentTextWidgets = <int, Widget>{
       .doc(widget.currentUser)
       .set({
         'projectID': projectID,
+        'projectStyle': projectStyleWithUnion,
         'senderUID': widget.currentUser,
         'senderPhoto': widget.currentUserPhoto,
         'senderUsername': widget.currentUserUsername,

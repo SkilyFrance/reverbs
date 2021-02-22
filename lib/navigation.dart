@@ -14,8 +14,15 @@ class NavigationPage extends StatefulWidget {
   String currentUser;
   String currentUserUsername;
   String currentUserPhoto;
+  bool premiumVersion;
 
-  NavigationPage({Key key, this.currentUser, this.currentUserUsername, this.currentUserPhoto}) : super(key: key);
+  NavigationPage({
+    Key key, 
+    this.currentUser, 
+    this.currentUserUsername,
+    this.currentUserPhoto,
+    this.premiumVersion,
+    }) : super(key: key);
 
   @override 
   NavigationPageState createState() => NavigationPageState();
@@ -70,6 +77,7 @@ class NavigationPageState extends State<NavigationPage> {
                   currentUser: widget.currentUser,
                   currentUserPhoto: widget.currentUserPhoto,
                   currentUserUsername: widget.currentUserUsername,
+                  premiumVersion: widget.premiumVersion,
                 );
                 break;
               case 1:

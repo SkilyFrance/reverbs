@@ -8,9 +8,17 @@ import 'package:flutter/material.dart';
 
 class MyProfilePage extends StatefulWidget {
 
+  String currentUser;
+  String currentUsername;
+  String currentUserPhoto;
 
 
-  MyProfilePage({Key key}) : super(key: key);
+  MyProfilePage({
+    Key key,
+    this.currentUser,
+    this.currentUsername,
+    this.currentUserPhoto,
+    }) : super(key: key);
 
 
   @override
@@ -118,9 +126,9 @@ class MyProfilePageState extends State<MyProfilePage> {
                     shape: BoxShape.circle,
                   ),
                   child: new ClipOval(
-                    child: new Image.asset('lib/assets/userPhoto.png',
-                    fit: BoxFit.cover,
-                    ),
+                    child: widget.currentUserPhoto != null
+                    ? new Image.network(widget.currentUserPhoto,fit: BoxFit.cover)
+                    : new Container(),
                   ),
                 ),
                 //Divider
@@ -130,8 +138,11 @@ class MyProfilePageState extends State<MyProfilePage> {
                 ),
                 new Container(
                   child: new Center(
-                    child: new Text('David Morillo',
-                    style: new TextStyle(color: Colors.grey, fontSize: 20.0, fontWeight: FontWeight.bold),
+                    child: new Text(
+                      widget.currentUsername != null
+                      ? widget.currentUsername
+                      : '',
+                      style: new TextStyle(color: Colors.grey, fontSize: 20.0, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -141,7 +152,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                   width: MediaQuery.of(context).size.width,
                 ),
                 //Divider
-                new Container(
+                /*new Container(
                     child: new Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -196,7 +207,7 @@ class MyProfilePageState extends State<MyProfilePage> {
                         ),
                       ],
                   ),
-                ),
+                ),*/
               ],
             ),
           ),

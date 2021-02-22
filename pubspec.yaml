@@ -43,6 +43,7 @@ dependencies:
   flutter_cache_manager: ^2.1.0
   audioplayers: ^0.16.2
   flutter_screen_recording: ^1.1.1
+  share: ^0.6.5+4
   
 dev_dependencies:
   flutter_test:
@@ -95,6 +96,7 @@ flutter:
     - lib/assets/userPhoto.png
     - lib/assets/user2.jpg
     - lib/assets/background.jpg
+    - lib/assets/reverbsCover.png
 
 
 

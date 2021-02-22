@@ -15,10 +15,13 @@ class ChatPage extends StatefulWidget {
   String currentUser;
   String currentUserphoto;
   String currentUsername;
-  //RecipientUserDatas
-  String recipientUserUID;
+  //
+  String conversationID;
+  String titleOfConversation;
+  //
+  String recipientUID;
   String recipientUserPhoto;
-  String recipientUserUsername;
+  String recipientUsername;
 
   final String heroTag;
 
@@ -27,9 +30,11 @@ class ChatPage extends StatefulWidget {
   this.currentUser,
   this.currentUserphoto,
   this.currentUsername,
-  this.recipientUserUID,
+  this.conversationID,
+  this.titleOfConversation,
+  this.recipientUID,
   this.recipientUserPhoto,
-  this.recipientUserUsername,
+  this.recipientUsername,
   this.heroTag,
   }) : super(key: key);
 
@@ -86,8 +91,8 @@ class ChatPageState extends State<ChatPage> {
         leading: new IconButton(
           icon: new Icon(Icons.arrow_back_ios_rounded, color: Colors.grey, size: 25.0),
           onPressed: () {Navigator.pop(context);}),
-          middle: new Text(widget.recipientUserUsername != null
-          ? widget.recipientUserUsername
+          middle: new Text(widget.titleOfConversation != null
+          ? widget.titleOfConversation
           : 'Unknown',
           style: new TextStyle(color: Colors.white, fontSize: 17.0, fontWeight: FontWeight.bold),
           ),
@@ -109,7 +114,7 @@ class ChatPageState extends State<ChatPage> {
               child: new Container(
                 color: Colors.transparent,
                 child: new StreamBuilder(
-                  stream: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection('discussions').doc(widget.recipientUserUID).collection('messages').orderBy('timestamp', descending: true).snapshots(),
+                  stream: FirebaseFirestore.instance.collection('users').doc(widget.currentUser).collection('discussions').doc(widget.conversationID).collection('messages').orderBy('timestamp', descending: true).snapshots(),
                   builder: (BuildContext context, snapshot) {
                     if(snapshot.hasError) {return new Container();}
                     if(!snapshot.hasData || snapshot.data.documents.isEmpty) {return new Container();}
@@ -139,8 +144,12 @@ class ChatPageState extends State<ChatPage> {
                                   height: MediaQuery.of(context).size.height*0.04,
                                   width: MediaQuery.of(context).size.height*0.04,
                                   child: new ClipOval(
-                                    child: ds.data()['senderPhoto'] != null
-                                    ? new Image.network(ds.data()['senderPhoto'], fit: BoxFit.cover)
+                                    child: ds.data()['fromMe'] == false && ds.data()['messageFromReverbs'] == true
+                                    ? new Image.asset('lib/assets/reverbsCover.png', fit: BoxFit.cover)
+                                    : ds.data()['fromMe'] == false && ds.data()['messageFromReverbs'] == false
+                                    ? new Image.network(ds.data()['recipientUserPhoto'], fit: BoxFit.cover)
+                                    : ds.data()['fromMe'] == true && ds.data()['messageFromReverbs'] == false
+                                    ? new Image.network(ds.data()['currentUserPhoto'], fit: BoxFit.cover)
                                     : new Container(),
                                 )),
                                 subtitle: ds.data()['typeOfContent'] == 'track'
@@ -273,8 +282,13 @@ class ChatPageState extends State<ChatPage> {
                                     padding: EdgeInsets.only(right: 20.0),
                                     child: new InkWell(
                                       onTap: () {
-                                        sendMessageAndCreateDiscussion();
-                                        _messagesListViewBuilder.animateTo(0.0, duration: new Duration(milliseconds: 500),curve: Curves.fastLinearToSlowEaseIn);
+                                     sendATextMessage(
+                                       widget.conversationID, 
+                                       widget.titleOfConversation, 
+                                       widget.recipientUID, 
+                                       widget.recipientUsername, 
+                                       widget.recipientUserPhoto);
+                                     _messagesListViewBuilder.animateTo(0.0, duration: new Duration(milliseconds: 500),curve: Curves.fastLinearToSlowEaseIn);
                                       },
                                       highlightColor: Colors.transparent,
                                       splashColor: Colors.transparent,
@@ -285,10 +299,15 @@ class ChatPageState extends State<ChatPage> {
                                   autocorrect: true,
                                   scrollPhysics: new ScrollPhysics(),
                                    onSubmitted: (value) {
-                                     sendMessageAndCreateDiscussion();
+                                     sendATextMessage(
+                                       widget.conversationID, 
+                                       widget.titleOfConversation, 
+                                       widget.recipientUID, 
+                                       widget.recipientUsername, 
+                                       widget.recipientUserPhoto);
                                      _messagesListViewBuilder.animateTo(0.0, duration: new Duration(milliseconds: 500),curve: Curves.fastLinearToSlowEaseIn);
-
                                    },
+
                                   onChanged: (value) {
                                     if(_messageTextController.text.length > 0 && _messageTextController.text.length == 1) {
                                       setState(() {
@@ -558,7 +577,12 @@ class ChatPageState extends State<ChatPage> {
                                                             color: Colors.deepPurpleAccent,
                                                             child: new Text('SEND', style: new TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold)), 
                                                             onPressed: () {
-                                                              sendATrack();
+                                                              sendATrack(
+                                                              widget.conversationID, 
+                                                              widget.titleOfConversation, 
+                                                              widget.recipientUID, 
+                                                              widget.recipientUsername, 
+                                                              widget.recipientUserPhoto);
                                                             }))
                                                           : new Container(),
                                                     ],
@@ -646,23 +670,227 @@ class ChatPageState extends State<ChatPage> {
   }
 
 
-  sendATrack() {
+  sendATextMessage(String conversationID, String titleOfConversation, String recipientUID, String recipientUsername, String recipientUserPhoto) {
+    int _timestampMessage = DateTime.now().microsecondsSinceEpoch;
+    // n°1 Send message to currentUser DB
+    // - Update discussion document
+    FirebaseFirestore.instance
+      .collection('users')
+      .doc(widget.currentUser)
+      .collection('discussions')
+      .doc(conversationID)
+      .set({
+        'conversationID': conversationID,
+        'messageFromReverbs': false,
+        'typeOfContent': 'text',
+        'lastFromMe': true,
+        'currentUser': widget.currentUser,
+        'titleOfConversation': titleOfConversation,
+        'recipientUID': recipientUID,
+        'recipientUsername': recipientUsername,
+        'recipientUserPhoto': recipientUserPhoto,
+        'coverOfConversation': recipientUserPhoto,
+        'lastMessageContent': _messageTextController.value.text.toString(),
+        'lastTimestamp': _timestampMessage,
+        'lastMessageIsOpened': false,
+      }).whenComplete(() {
+        print('Cloud Firestore : discussion document (admin) updated');
+       // - set new message in collection
+       FirebaseFirestore.instance
+         .collection('users')
+         .doc(widget.currentUser)
+         .collection('discussions')
+         .doc(conversationID)
+         .collection('messages')
+         .doc(_timestampMessage.toString())
+         .set({
+           'messageFromReverbs': false,
+           'typeOfContent': 'text',
+           'content':_messageTextController.value.text.toString(),
+           'fromMe': true,
+           'currentUser': widget.currentUser,
+           'currentUserPhoto': widget.currentUserphoto,
+           'currentUsername': widget.currentUsername,
+           'recipientUID': recipientUID,
+           'recipientUsername': recipientUsername,
+           'recipientUserPhoto': recipientUserPhoto,
+           'timestamp': _timestampMessage,
+         }).whenComplete(() {
+           print('Cloud Firestore : message collection (admin) setted');
+           // n°2 Send message to recipient DB
+           // - Update discussion document
+           FirebaseFirestore.instance
+             .collection('users')
+             .doc(recipientUID)
+             .collection('discussions')
+             .doc(conversationID)
+             .set({
+               'conversationID': conversationID,
+               'messageFromReverbs': false,
+               'typeOfContent': 'text',
+               'lastFromMe': false,
+               'currentUser': recipientUID,
+               'titleOfConversation': titleOfConversation,
+               'recipientUID': widget.currentUser,
+               'recipientUsername': widget.currentUsername,
+               'recipientUserPhoto': widget.currentUserphoto,
+               'coverOfConversation': widget.currentUserphoto,
+               'lastMessageContent': _messageTextController.value.text.toString(),
+               'lastTimestamp': _timestampMessage,
+               'lastMessageIsOpened': false,
+             }).whenComplete(() {
+               print('Cloud Firestore : discussion document (recipient) updated');
+               // - set new message in collection
+               FirebaseFirestore.instance
+                 .collection('users')
+                 .doc(recipientUID)
+                 .collection('discussions')
+                 .doc(conversationID)
+                 .collection('messages')
+                 .doc(_timestampMessage.toString())
+                 .set({
+                   'messageFromReverbs': false,
+                   'typeOfContent': 'text',
+                   'content': _messageTextController.value.text.toString(),
+                   'fromMe': false,
+                   'currentUser': recipientUID,
+                   'currentUserPhoto': recipientUserPhoto,
+                   'currentUsername': recipientUsername,
+                   'recipientUID': widget.currentUser,
+                   'recipientUsername': widget.currentUsername,
+                   'recipientUserPhoto': widget.currentUserphoto,
+                   'timestamp': _timestampMessage
+                 }).whenComplete(() {
+                    print('Cloud Firestore : message collection (recipient) setted');
+                    _messageTextController.clear();
+                    });
+                  });
+               });
+            });
+          }
+
+
+  sendATrack(String conversationID, String titleOfConversation, String recipientUID, String recipientUsername, String recipientUserPhoto) {
+    int _timestampMessage = DateTime.now().microsecondsSinceEpoch;
+    // n°1 Send message to currentUser DB
+    // - Update discussion document
+    FirebaseFirestore.instance
+      .collection('users')
+      .doc(widget.currentUser)
+      .collection('discussions')
+      .doc(conversationID)
+      .set({
+        'conversationID': conversationID,
+        'messageFromReverbs': false,
+        'typeOfContent': 'track',
+        'lastFromMe': true,
+        'currentUser': widget.currentUser,
+        'titleOfConversation': titleOfConversation,
+        'recipientUID': recipientUID,
+        'recipientUsername': recipientUsername,
+        'recipientUserPhoto': recipientUserPhoto,
+        'coverOfConversation': recipientUserPhoto,
+        'lastMessageContent': 'track',
+        'lastTimestamp': _timestampMessage,
+        'lastMessageIsOpened': false,
+      }).whenComplete(() {
+        print('Cloud Firestore : discussion document (admin) updated');
+        // - set new message in collection
+        FirebaseFirestore.instance
+         .collection('users')
+         .doc(widget.currentUser)
+         .collection('discussions')
+         .doc(conversationID)
+         .collection('messages')
+         .doc(_timestampMessage.toString())
+         .set({
+           'messageFromReverbs': false,
+           'typeOfContent': 'track',
+           'title': _fileMusicTitle,
+           'content': _fileMusicURL,
+           'fromMe': true,
+           'currentUser': widget.currentUser,
+           'currentUserPhoto': widget.currentUserphoto,
+           'currentUsername': widget.currentUsername,
+           'recipientUID': recipientUID,
+           'recipientUsername': recipientUsername,
+           'recipientUserPhoto': recipientUserPhoto,
+           'timestamp': _timestampMessage,
+         }).whenComplete(() {
+           print('Cloud Firestore : message collection (admin) setted');
+           // n°2 Send message to recipient DB
+           // - Update discussion document
+           FirebaseFirestore.instance
+             .collection('users')
+             .doc(recipientUID)
+             .collection('discussions')
+             .doc(conversationID)
+             .set({
+               'conversationID': conversationID,
+               'messageFromReverbs': false,
+               'typeOfContent': 'track',
+               'lastFromMe': false,
+               'currentUser': recipientUID,
+               'titleOfConversation': titleOfConversation,
+               'recipientUID': widget.currentUser,
+               'recipientUsername': widget.currentUsername,
+               'recipientUserPhoto': widget.currentUserphoto,
+               'coverOfConversation': widget.currentUserphoto,
+               'lastMessageContent': 'track',
+               'lastTimestamp': _timestampMessage,
+               'lastMessageIsOpened': false,
+             }).whenComplete(() {
+               print('Cloud Firestore : discussion document (recipient) updated');
+               // - set new message in collection
+               FirebaseFirestore.instance
+                 .collection('users')
+                 .doc(recipientUID)
+                 .collection('discussions')
+                 .doc(conversationID)
+                 .collection('messages')
+                 .doc(_timestampMessage.toString())
+                 .set({
+                   'messageFromReverbs': false,
+                   'typeOfContent': 'track',
+                   'title': _fileMusicTitle,
+                   'content': _fileMusicURL,
+                   'fromMe': false,
+                   'currentUser': recipientUID,
+                   'currentUserPhoto': recipientUserPhoto,
+                   'currentUsername': recipientUsername,
+                   'recipientUID': widget.currentUser,
+                   'recipientUsername': widget.currentUsername,
+                   'recipientUserPhoto': widget.currentUserphoto,
+                   'timestamp': _timestampMessage
+                 }).whenComplete(() {
+                   print('Cloud Firestore : message collection (recipient) setted');
+                   Navigator.pop(context);
+                 });
+             });
+         });
+      });
+  }
+
+  /*sendATrack(String recipientUID) {
   int _timestampMessage = DateTime.now().microsecondsSinceEpoch;
   /// CURRENT USER ///
     FirebaseFirestore.instance
       .collection('users')
       .doc(widget.currentUser)
       .collection('discussions')
-      .doc(widget.recipientUserUID)
+      .doc(recipientUID)
       .set({
         'typeOfContent': 'track',
         'lastFromMe': true,
+
         'senderUID': widget.currentUser,
         'senderUsername': widget.currentUsername,
         'senderPhoto': widget.currentUserphoto,
-        'recipientUID': widget.recipientUserUID,
+
+        'recipientUID': recipientUID
         'recipientUsername': widget.recipientUserUsername,
         'recipientUserPhoto': widget.recipientUserPhoto,
+        
         'lastMessageContent': 'track',
         'lastTimestamp': _timestampMessage,
         'lastMessageIsOpened': false,
@@ -680,12 +908,15 @@ class ChatPageState extends State<ChatPage> {
             'content': _fileMusicURL,
             'duration': _fileMusicDuration,
             'fromMe': true,
+
             'senderUID': widget.currentUser,
             'senderUsername': widget.currentUsername,
             'senderPhoto': widget.currentUserphoto,
+
             'recipientUID': widget.recipientUserUID,
             'recipientUsername': widget.recipientUserUsername,
             'recipientUserPhoto': widget.recipientUserPhoto,
+
             'timestamp': _timestampMessage,
           });
     /// RECIPIENT USER ///
@@ -697,12 +928,15 @@ class ChatPageState extends State<ChatPage> {
           .set({
             'typeOfContent': 'track',
             'lastFromMe': false,
-            'senderUID': widget.currentUser,
-            'senderUsername': widget.currentUsername,
-            'senderPhoto': widget.currentUserphoto,
-            'recipientUID': widget.recipientUserUID,
-            'recipientUsername': widget.recipientUserUsername,
-            'recipientUserPhoto': widget.recipientUserPhoto,
+
+            'senderUID': widget.recipientUserUID,
+            'senderUsername': widget.recipientUserUsername,
+            'senderPhoto': widget.recipientUserPhoto,
+
+            'recipientUID': widget.currentUser,
+            'recipientUsername': widget.currentUsername,
+            'recipientUserPhoto': widget.currentUserphoto,
+
             'lastMessageContent': 'track',
             'lastTimestamp': _timestampMessage,
             'lastMessageIsOpened': false,
@@ -733,8 +967,8 @@ class ChatPageState extends State<ChatPage> {
               });
           });
       });
-  }
-  sendMessageAndCreateDiscussion() {
+  }*/
+  /*sendMessageAndCreateDiscussion() {
   int _timestampMessage = DateTime.now().microsecondsSinceEpoch;
   /// CURRENT USER ///
     FirebaseFirestore.instance
@@ -745,12 +979,15 @@ class ChatPageState extends State<ChatPage> {
       .set({
         'typeOfContent': 'text',
         'lastFromMe': true,
+        
         'senderUID': widget.currentUser,
         'senderUsername': widget.currentUsername,
         'senderPhoto': widget.currentUserphoto,
+
         'recipientUID': widget.recipientUserUID,
         'recipientUsername': widget.recipientUserUsername,
         'recipientUserPhoto': widget.recipientUserPhoto,
+
         'lastMessageContent': _messageTextController.value.text.toString(),
         'lastTimestamp': _timestampMessage,
         'lastMessageIsOpened': false,
@@ -783,12 +1020,15 @@ class ChatPageState extends State<ChatPage> {
           .set({
             'typeOfContent': 'text',
             'lastFromMe': false,
-            'senderUID': widget.currentUser,
-            'senderUsername': widget.currentUsername,
-            'senderPhoto': widget.currentUserphoto,
-            'recipientUID': widget.recipientUserUID,
-            'recipientUsername': widget.recipientUserUsername,
-            'recipientUserPhoto': widget.recipientUserPhoto,
+            
+            'senderUID': widget.recipientUserUID,
+            'senderUsername': widget.recipientUserUsername,
+            'senderPhoto': widget.recipientUserPhoto,
+
+            'recipientUID': widget.currentUser,
+            'recipientUsername': widget.currentUsername,
+            'recipientUserPhoto': widget.currentUserphoto,
+
             'lastMessageContent': _messageTextController.value.text.toString(),
             'lastTimestamp': _timestampMessage,
             'lastMessageIsOpened': false,
@@ -821,6 +1061,6 @@ class ChatPageState extends State<ChatPage> {
           });
       });
       
-  }
+  }*/
 
 }

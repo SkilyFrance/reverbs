@@ -266,7 +266,9 @@ class LoginPageState extends State<LoginPage> {
                                   new NavigationPage(
                                   currentUser: authResult.user.uid, 
                                   currentUserUsername: value.data()['userName'],
-                                  currentUserPhoto: value.data()['profilePhoto'])), 
+                                  currentUserPhoto: value.data()['profilePhoto'],
+                                  premiumVersion: value.data()['premiumVersion']
+                                  )), 
                                   (route) => false);
                               } else {
                                 //ValueNoExist
