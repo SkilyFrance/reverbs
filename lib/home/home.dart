@@ -38,6 +38,8 @@ class HomePageState extends State<HomePage> {
 
   PageController _projectsPageViewController = new PageController(viewportFraction: 1, initialPage: 0);
 
+  bool _premiumVersionUpdated = false;
+
   @override
   void initState() {
     _projectsPageViewController = new PageController(viewportFraction: 1, initialPage: 0);
@@ -454,8 +456,7 @@ class HomePageState extends State<HomePage> {
                                                       onPressed: () {
                                                         final RenderBox box = context.findRenderObject();
                                                         Share.share(
-                                                          'https://testflight.apple.com/join/UrDA8giU',
-                                                          subject: 'Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put : ${widget.currentUserUsername} as a sponsor on your first connection. hope to see you.',
+                                                          "Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put this code : '${widget.currentUser}' as invitation code on your first connection. The download link : https://testflight.apple.com/join/UrDA8giU hope to see you.",
                                                           sharePositionOrigin: box.localToGlobal(Offset.zero)&box.size).whenComplete(() {
                                                             print('Ok');
                                                           });
@@ -665,37 +666,121 @@ class HomePageState extends State<HomePage> {
                                                             builder: (BuildContext context, snapshot){
                                                               if(snapshot.hasError){return new Container();}
                                                               if(!snapshot.hasData || snapshot.data.documents.isEmpty){
-                                                                return new Text('Invite 5 producers friends.',
-                                                                style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold));
+                                                                return new Container(
+                                                                  child: new Column(
+                                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                                    children: [
+                                                                      new Text('Invite 5 producers friends.',
+                                                                      style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold)),
+                                                                      new Padding(
+                                                                        padding: EdgeInsets.only(top: 20.0),
+                                                                      child: new FlatButton(
+                                                                        splashColor: Colors.transparent,
+                                                                        highlightColor: Colors.transparent,
+                                                                        focusColor: Colors.transparent,
+                                                                        color: Colors.deepPurpleAccent,
+                                                                        shape: new RoundedRectangleBorder(
+                                                                          borderRadius: new BorderRadius.circular(5.0),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          final RenderBox box = context.findRenderObject();
+                                                                          Share.share(
+                                                                            "Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put this code : '${widget.currentUser}' as invitation code on your first connection. The download link : https://testflight.apple.com/join/UrDA8giU hope to see you.",
+                                                                            sharePositionOrigin: box.localToGlobal(Offset.zero)&box.size).whenComplete(() {
+                                                                              print('Ok');
+                                                                            });
+                                                                        }, 
+                                                                        child: new Text('INVITE',
+                                                                        style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  )
+                                                                );
                                                              }
-                                                             return new Text('Invite ${5-(snapshot.data.documents.length)} producers friends.',
-                                                             style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold));
-                                                            })),
+                                                             if(snapshot.data.documents.length >= 5) {
+                                                                return new Container(
+                                                                  child: new Column(
+                                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                                    children: [
+                                                                      new Text('Congrats, you can get premium version.',
+                                                                      style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold)),
+                                                                      new Padding(
+                                                                        padding: EdgeInsets.only(top: 20.0),
+                                                                      child: 
+                                                                      _premiumVersionUpdated == false
+                                                                      ? new FlatButton(
+                                                                        splashColor: Colors.transparent,
+                                                                        highlightColor: Colors.transparent,
+                                                                        focusColor: Colors.transparent,
+                                                                        color: Colors.yellow[600],
+                                                                        shape: new RoundedRectangleBorder(
+                                                                          borderRadius: new BorderRadius.circular(5.0),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          FirebaseFirestore.instance
+                                                                            .collection('users')
+                                                                            .doc(widget.currentUser)
+                                                                            .update({
+                                                                              'premiumVersion': true,
+                                                                            }).whenComplete(() {
+                                                                              print('Cloud Firestore : Account transformed in Premium.');
+                                                                              modalSetState((){
+                                                                                _premiumVersionUpdated = true;
+                                                                              });
+                                                                              setState(() {
+                                                                                _premiumVersionUpdated = true;
+                                                                              });
+                                                                            });
+                                                                        }, 
+                                                                        child: new Text('GET PREMIUM',
+                                                                        style: new TextStyle(color: Colors.black, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                        )
+                                                                      : new Text('🌟 Just restart Reverbs now 🌟',
+                                                                      style: new TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.bold),
+                                                                      ),
+                                                                      ),
+                                                                    ],
+                                                                  )
+                                                                );
+                                                             }
+                                                                return new Container(
+                                                                  child: new Column(
+                                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                                    children: [
+                                                                      new Text('Invite ${5-(snapshot.data.documents.length)} producers friends.',
+                                                                      style: new TextStyle(color: Colors.grey, fontSize: 14.0, fontWeight: FontWeight.bold)),
+                                                                      new Padding(
+                                                                        padding: EdgeInsets.only(top: 20.0),
+                                                                      child: new FlatButton(
+                                                                        splashColor: Colors.transparent,
+                                                                        highlightColor: Colors.transparent,
+                                                                        focusColor: Colors.transparent,
+                                                                        color: Colors.deepPurpleAccent,
+                                                                        shape: new RoundedRectangleBorder(
+                                                                          borderRadius: new BorderRadius.circular(5.0),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          final RenderBox box = context.findRenderObject();
+                                                                          Share.share(
+                                                                            "Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put this code : '${widget.currentUser}' as invitation code on your first connection. The download link : https://testflight.apple.com/join/UrDA8giU hope to see you.",
+                                                                            sharePositionOrigin: box.localToGlobal(Offset.zero)&box.size).whenComplete(() {
+                                                                              print('Ok');
+                                                                            });
+                                                                        }, 
+                                                                        child: new Text('INVITE',
+                                                                        style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
+                                                                        ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  )
+                                                                );
+                                                            }),
+                                                          ),
                                                         ],
-                                                      ),
-                                                    ),
-                                                    new Padding(
-                                                      padding: EdgeInsets.only(top: 10.0),
-                                                    child: new FlatButton(
-                                                      splashColor: Colors.transparent,
-                                                      highlightColor: Colors.transparent,
-                                                      focusColor: Colors.transparent,
-                                                      color: Colors.deepPurpleAccent,
-                                                      shape: new RoundedRectangleBorder(
-                                                        borderRadius: new BorderRadius.circular(5.0),
-                                                      ),
-                                                      onPressed: () {
-                                                        final RenderBox box = context.findRenderObject();
-                                                        Share.share(
-                                                          'https://testflight.apple.com/join/UrDA8giU',
-                                                          subject: 'Hey, join me on Reverbs to discover & be connected with new electronic music producers. You just have to download TestFlight (An Apple app) to have an access on Reverbs 🚀, Think to put : ${widget.currentUserUsername} as a sponsor on your first connection. hope to see you.',
-                                                          sharePositionOrigin: box.localToGlobal(Offset.zero)&box.size).whenComplete(() {
-                                                            print('Ok');
-                                                          });
-                                                      }, 
-                                                      child: new Text('INVITE',
-                                                      style: new TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.bold),
-                                                      ),
                                                       ),
                                                     ),
                                                   ],
